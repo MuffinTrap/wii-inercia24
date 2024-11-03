@@ -30,3 +30,23 @@
 *.exe
 *.out
 *.app
+*.dol
+*.elf
+
+# Object files from images and sound
+build/
+
+# Mac folder files?
+.DS_Store
+
+# Project files from KDevelop
+.kdev4/
+*.kdev4
+
+# Kate meta files
+*.kate-swp
+
+*.pco
+*.wo
+*.lo
+*.mo
