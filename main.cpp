@@ -1,5 +1,8 @@
 #include <mgdl.h>
+#include "src/scene.h"
 
+
+static Scene scene;
 //---------------------------------------------------------------------
 void init()
 {
@@ -7,11 +10,14 @@ void init()
     gdl::InitOrthoProjection();
 
     glClearColor(247.0f/255.0f, 1.0f, 174.0f/255.0f, 0.0f);
+
+    scene.Init();
 }
 // Rendering callback. glFlush etc.. is done automatically after it
 void render()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
+    gdl::cross_glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    scene.Draw();
 }
 
 
