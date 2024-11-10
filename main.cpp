@@ -1,5 +1,6 @@
 #include <mgdl.h>
 #include "src/scene.h"
+#include <stdio.h>
 
 
 static Scene scene;

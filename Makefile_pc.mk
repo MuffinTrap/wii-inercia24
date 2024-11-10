@@ -14,7 +14,7 @@ CXXFLAGS = -Werror=unused-function -Wall -Wextra -Wpedantic -std=c++11
 # #############################
 
 # For Debugging
-CXXFLAGS += -ggdb
+# CXXFLAGS += -ggdb
 
 CXXFLAGS += -DUFBX_REAL_IS_FLOAT
 

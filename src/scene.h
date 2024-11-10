@@ -12,5 +12,7 @@ public:
 	gdl::Scene* shipScene;
 	gdl::Image* shipTexture;
 	gdl::Image* spacebg;
+	gdl::Image* heightMap;
+	gdl::Mesh* terrain;
 
 };
