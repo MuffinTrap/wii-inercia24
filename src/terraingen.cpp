@@ -41,12 +41,16 @@ gdl::Mesh* TerrainGenerator::GenerateFromPNG ( float unitsPerPixel, float height
 
 		// Start here
 		float sx = -0.5f - (float)(width/2) * 0.5f;
+		sx *= unitsPerPixel;
 		float sz = -0.5f - (float)(depth/2) * 0.5f;
+		sz *= unitsPerPixel;
 
 		size_t positionIndex = 0;
 		const size_t x = 0;
 		const size_t y = 1;
 		const size_t z = 2;
+		const float uStep = 1.0f/(float)(width);
+		const float vStep = 1.0f/(float)(depth);
 		for (int d = 0; d < depth; d++)
 		{
 			for (int w = 0; w < width; w++)
@@ -58,22 +62,20 @@ gdl::Mesh* TerrainGenerator::GenerateFromPNG ( float unitsPerPixel, float height
 				float px = sx + (w * unitsPerPixel);
 				float py = png->GetGrayscale(w, d) * heightMultiplier;
 				float pz = sz + (d * unitsPerPixel);
-				printf("P %zu (%.1f, %.1f, %.1f)\n", positionIndex, px, py, pz);
-				printf("P %zu (%d, %d, %d)\n", positionIndex, vertexi+x, vertexi+y, vertexi+z);
+				// printf("P %zu (%.1f, %.1f, %.1f)\n", positionIndex, px, py, pz);
+				// printf("P %zu (%d, %d, %d)\n", positionIndex, vertexi+x, vertexi+y, vertexi+z);
 
 				mesh->positions[vertexi + x] = px;
 				mesh->positions[vertexi + y] = py;
 				mesh->positions[vertexi + z] = pz;
-				printf("P %zu (%.1f, %.1f, %.1f)\n", positionIndex, mesh->positions[vertexi+x], mesh->positions[vertexi+y], mesh->positions[vertexi+z] );
+				// printf("P %zu (%.1f, %.1f, %.1f)\n", positionIndex, mesh->positions[vertexi+x], mesh->positions[vertexi+y], mesh->positions[vertexi+z] );
 
-				// TODO generate normals
 				mesh->normals[vertexi + x] = 0.0f;
 				mesh->normals[vertexi + y] = 1.0f;
 				mesh->normals[vertexi + z] = 0.0f;
 
-				// TODO generate uv's
-				mesh->uvs[uvi + x] = 0.0f;
-				mesh->uvs[uvi + y] = 0.0f;
+				mesh->uvs[uvi + x] = uStep * (float)w;
+				mesh->uvs[uvi + y] = vStep * (float)d;
 
 				positionIndex++;
 			}
@@ -93,25 +95,17 @@ gdl::Mesh* TerrainGenerator::GenerateFromPNG ( float unitsPerPixel, float height
 				mesh->indices[ii + 0]=corner;
 				mesh->indices[ii + 1]=below;
 				mesh->indices[ii + 2]=next;
-				printf("T%lu (%d, %d, %d)\n", ti, corner, below, next);
+				// printf("T%lu (%d, %d, %d)\n", ti, corner, below, next);
 				ti++;
 
 				mesh->indices[ii + 3]=next;
 				mesh->indices[ii + 4]=below;
 				mesh->indices[ii + 5]=across;
-				printf("T%lu (%d, %d, %d)\n", ti, next, below, across);
+				// printf("T%lu (%d, %d, %d)\n", ti, next, below, across);
 				ii += 6;
 				ti++;
 			}
 		}
-	}
-
-	printf("All positions\n");
-	for (size_t i = 0; i < mesh->vertexCount*3; i++)
-	{
-		//printf("P %zu (%.1f, %.1f, %.1f)\n", i, mesh->positions[i], mesh->positions[i+1], mesh->positions[i+2]);
-		printf("P %zu (%.2f)\n", i, mesh->positions[i]);
-
 	}
 
 	// Generate normals
@@ -119,7 +113,7 @@ gdl::Mesh* TerrainGenerator::GenerateFromPNG ( float unitsPerPixel, float height
 	// Calculate a normal for the
 	// triangle
 	GLsizei triangleCount = mesh->indexCount/3;
-	printf("Normals for %d triangles\n", triangleCount );
+	// printf("Normals for %d triangles\n", triangleCount );
 	glm::vec3* triangleNormals = new glm::vec3[triangleCount];
 	if (triangleNormals == nullptr)
 	{
@@ -147,7 +141,7 @@ gdl::Mesh* TerrainGenerator::GenerateFromPNG ( float unitsPerPixel, float height
 			GLushort vc = mesh->indices[draw + 2];
 
 			GLushort index = va;
-			printf("TI: %d: %d %d %d\n", draw, va, vb, vc);
+			// printf("TI: %d: %d %d %d\n", draw, va, vb, vc);
 			a.x = mesh->positions[index*3 + 0];
 			a.y = mesh->positions[index*3 + 1];
 			a.z = mesh->positions[index*3 + 2];
@@ -162,12 +156,14 @@ gdl::Mesh* TerrainGenerator::GenerateFromPNG ( float unitsPerPixel, float height
 			c.y = mesh->positions[index*3 + 1];
 			c.z = mesh->positions[index*3 + 2];
 
+			/*
 			printf("T %d/A (%.1f, %.1f, %.1f)\n", ti, a.x, a.y, a.z);
 			printf("T %d/B (%.1f, %.1f, %.1f)\n", ti, b.x, b.y, b.z);
 			printf("T %d/C (%.1f, %.1f, %.1f)\n", ti, c.x, c.y, c.z);
+			*/
 			N = glm::normalize(glm::cross(c - a, b - a));
 			N *= -1.0f; // flip flop
-			printf("N %d (%.1f, %.1f, %.1f)\n", ti, N.x, N.y, N.z);
+			// printf("N %d (%.1f, %.1f, %.1f)\n", ti, N.x, N.y, N.z);
 			if (ti < triangleCount)
 			{
 				triangleNormals[ti] = N;
@@ -240,7 +236,7 @@ gdl::Mesh* TerrainGenerator::GenerateFromPNG ( float unitsPerPixel, float height
 				normalSum = glm::normalize(normalSum);
 				pointNormal = gdl::vec3(normalSum.x, normalSum.y, normalSum.z);
 				mesh->SetNormal(point, pointNormal);
-				printf("PN %d (%.1f, %.1f, %.1f)\n", point, pointNormal.x, pointNormal.y, pointNormal.z);
+				// printf("PN %d (%.1f, %.1f, %.1f)\n", point, pointNormal.x, pointNormal.y, pointNormal.z);
 			}
 		}
 	}

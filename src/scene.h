@@ -14,5 +14,6 @@ public:
 	gdl::Image* spacebg;
 	gdl::Image* heightMap;
 	gdl::Mesh* terrain;
+	gdl::Font* debugFont;
 
 };

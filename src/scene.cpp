@@ -9,7 +9,7 @@ void Scene::Init()
 	shipTexture = gdl::LoadImage("assets/spaceship.png", gdl::TextureFilterModes::Nearest);
     gdl::FBXFile* shipFbx = new gdl::FBXFile();
     shipScene = shipFbx->LoadFile("assets/spaceship.fbx");
-    shipScene->SetMaterialTexture("spaceship", shipTexture);
+    shipScene->SetMaterialTexture("spaceship.png", shipTexture);
 
 	// BG
 	spacebg = gdl::LoadImage("assets/spacebg.png", gdl::TextureFilterModes::Linear);
@@ -17,12 +17,21 @@ void Scene::Init()
     // Heightmap
     gdl::PNGFile* terrainPNG = new gdl::PNGFile();
     terrainPNG->ReadFile("assets/testmap.png");
-    terrain = TerrainGenerator::GenerateFromPNG(1.0f, 3.0f, terrainPNG);
-
+    terrain = TerrainGenerator::GenerateFromPNG(256.0f, 256.0f, terrainPNG);
     heightMap = new gdl::Image();
-    heightMap->LoadPNG(terrainPNG, gdl::TextureFilterModes::Nearest);
+    heightMap->LoadPNG(terrainPNG, gdl::TextureFilterModes::Linear);
 
+    // Make terrain part of the ship scene
+    shipScene->SetActiveParentNode(shipScene->GetRootNode());
+    gdl::Node* terrainNode = new gdl::Node("terrain", terrain, new gdl::Material("terrain", heightMap));
+    terrainNode->transform.scale = 1.0f;
+    terrainNode->transform.Translate(gdl::vec3(-100.0f, -4.0f, -300.0f));
+    shipScene->PushChildNode(terrainNode);
     delete terrainPNG;
+
+
+
+    debugFont = gdl::LoadFont("assets/font8x16.png", 8, 16, ' ');
 
 	// Init rendering
     glEnable(GL_DEPTH_TEST);
@@ -48,32 +57,17 @@ void Scene::Draw()
     gdl::InitCamera(gdl::vec3(0.0f, 0.0f, 0.0f), gdl::vec3(0.0f, 0.0f, -1.0f), gdl::vec3(0.0f, 1.0f, 0.0f));
     glPushMatrix();
 
-    glTranslatef(0.0f, -2.0f, -5.0f);
-    glRotatef(gdl::GetElapsedSeconds()* 30.0f, 0.0f, 1.0f, 0.0f);
-    glRotatef(gdl::GetElapsedSeconds()* 55.0f, 1.0f, 0.0f, 0.0f);
+    glTranslatef(0.0f, -4.5f, -48.0f);
+    glRotatef(gdl::GetElapsedSeconds()* 5.0f, 1.0f, 0.0f, 0.0f);
+    glRotatef(gdl::GetElapsedSeconds()* 10.0f, 0.0f, 1.0f, 0.0f);
     //glRotatef(gdl::GetElapsedSeconds()* 25.0f, 0.0f, 0.0f, 1.0f);
+    glScalef(0.1f, 0.1f, 0.1f);
 
-    // shipScene->Draw();
-    // glScalef(0.1f, 0.1f, 0.1f);
-    // Draw the terrain
-
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, heightMap->GetTextureId());
-    glColor3f(1.0f, 1.0f, 1.0f);
-    glScalef(1.1f, 1.1f, 1.1f);
-
-    terrain->DrawElements();
-
-    /*
-	glDisable(GL_TEXTURE_2D);
-    glColor3f(0.2f, 1.0f, 0.2f);
-    terrain->DrawLines();
-
-    glColor3f(1.0f, 0.3f, 0.2f);
-    terrain->DrawNormals();
-    */
+    shipScene->Draw();
 
     glPopMatrix();
 
-
+    glDisable(GL_DEPTH_TEST);
+    gdl::InitOrthoProjection();
+    shipScene->DebugDraw(debugFont, 10, gdl::GetScreenHeight() - 10);
 }
