@@ -1,6 +1,13 @@
 
 #include "scene.h"
 #include "terraingen.h"
+#include "../rocket/mgdl-rocket.h"
+
+#ifndef SYNC_PLAYER
+    static ROCKET_TRACK camera_x;
+    static ROCKET_TRACK camera_y;
+    static ROCKET_TRACK camera_z;
+#endif
 
 void Scene::Init()
 {
@@ -40,6 +47,28 @@ void Scene::Init()
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glShadeModel(GL_FLAT);
+
+    // Init Rocket
+#ifdef GEKKO
+    spaceMusic = gdl::LoadOgg("assets/spacemusic.ogg");
+#else
+    spaceMusic = gdl::LoadSound("assets/spacemusic.wav");
+#endif
+    bool rocketInit = gdl::RocketSync::InitRocket(spaceMusic, 72, 4);
+    if (rocketInit)
+    {
+        camera_x = gdl::RocketSync::GetTrack("camera:x");
+        camera_y = gdl::RocketSync::GetTrack("camera:y");
+        camera_z = gdl::RocketSync::GetTrack("camera:z");
+
+        gdl::RocketSync::StartSync();
+    }
+}
+
+void Scene::Update()
+{
+    gdl::RocketSync::UpdateRow();
+
 }
 
 void Scene::Draw()
@@ -54,7 +83,16 @@ void Scene::Draw()
     glEnable(GL_DEPTH_TEST);
 	// Draw ship
 	gdl::InitPerspectiveProjection(75.0f, 0.1f, 500.0f);
-    gdl::InitCamera(gdl::vec3(0.0f, 0.0f, 0.0f), gdl::vec3(0.0f, 0.0f, -1.0f), gdl::vec3(0.0f, 1.0f, 0.0f));
+
+    gdl::vec3 cameraPos;
+    cameraPos.x = gdl::RocketSync::GetFloat(camera_x);
+    cameraPos.y = gdl::RocketSync::GetFloat(camera_y);
+    cameraPos.z = gdl::RocketSync::GetFloat(camera_z);
+
+    gdl::InitCamera(
+        cameraPos,
+        gdl::vec3(0.0f, 0.0f, -1.0f),
+        gdl::vec3(0.0f, 1.0f, 0.0f));
     glPushMatrix();
 
     glTranslatef(0.0f, -4.5f, -48.0f);
@@ -70,4 +108,10 @@ void Scene::Draw()
     glDisable(GL_DEPTH_TEST);
     gdl::InitOrthoProjection();
     shipScene->DebugDraw(debugFont, 10, gdl::GetScreenHeight() - 10);
+}
+void Scene::SaveTracks()
+{
+    gdl::RocketSync::StartSaveToHeader();
+    gdl::RocketSync::SaveAllTracks();
+    gdl::RocketSync::EndSaveToHeader();
 }

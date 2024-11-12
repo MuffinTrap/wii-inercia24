@@ -7,7 +7,9 @@ class Scene
 	// This has all the models and textures etc.
 public:
 	void Init();
+	void Update();
 	void Draw();
+	void SaveTracks();
 
 	gdl::Scene* shipScene;
 	gdl::Image* shipTexture;
@@ -15,5 +17,6 @@ public:
 	gdl::Image* heightMap;
 	gdl::Mesh* terrain;
 	gdl::Font* debugFont;
+	gdl::Sound* spaceMusic;
 
 };

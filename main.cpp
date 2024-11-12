@@ -2,6 +2,12 @@
 #include "src/scene.h"
 #include <stdio.h>
 
+#include "rocket/mgdl-rocket.h"
+
+#ifdef SYNC_PLAYER
+    #include MGDL_ROCKET_FILE_H
+    #include MGDL_ROCKET_FILE_CPP
+#endif
 
 static Scene scene;
 //---------------------------------------------------------------------
@@ -25,6 +31,11 @@ void render()
 // Called before render()
 void update()
 {
+    if (gdl::GetController(0).ButtonPress(gdl::WiiButtons::Button2))
+    {
+        scene.SaveTracks();
+
+    }
     if (gdl::GetController(0).ButtonPress(gdl::WiiButtons::ButtonHome))
     {
         gdl::Platform& plat = gdl::Platform::GetPlatform();
