@@ -4,10 +4,6 @@
 
 #include "rocket/mgdl-rocket.h"
 
-#ifdef SYNC_PLAYER
-    #include MGDL_ROCKET_FILE_H
-    #include MGDL_ROCKET_FILE_CPP
-#endif
 
 static Scene scene;
 //---------------------------------------------------------------------
@@ -31,14 +27,17 @@ void render()
 // Called before render()
 void update()
 {
+    scene.Update();
+#ifndef SYNC_PLAYER
     if (gdl::GetController(0).ButtonPress(gdl::WiiButtons::Button2))
     {
         scene.SaveTracks();
-
     }
+#endif
     if (gdl::GetController(0).ButtonPress(gdl::WiiButtons::ButtonHome))
     {
         gdl::Platform& plat = gdl::Platform::GetPlatform();
+        gdl::RocketSync::Disconnect();
         plat.DoProgramExit();
     }
 }

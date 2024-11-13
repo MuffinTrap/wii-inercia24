@@ -2,6 +2,7 @@
 #include "scene.h"
 #include "terraingen.h"
 #include "../rocket/mgdl-rocket.h"
+#include "../tracks.h"
 
 #ifndef SYNC_PLAYER
     static ROCKET_TRACK camera_x;
@@ -57,9 +58,11 @@ void Scene::Init()
     bool rocketInit = gdl::RocketSync::InitRocket(spaceMusic, 72, 4);
     if (rocketInit)
     {
+#ifndef SYNC_PLAYER
         camera_x = gdl::RocketSync::GetTrack("camera:x");
         camera_y = gdl::RocketSync::GetTrack("camera:y");
         camera_z = gdl::RocketSync::GetTrack("camera:z");
+#endif
 
         gdl::RocketSync::StartSync();
     }
@@ -111,7 +114,5 @@ void Scene::Draw()
 }
 void Scene::SaveTracks()
 {
-    gdl::RocketSync::StartSaveToHeader();
     gdl::RocketSync::SaveAllTracks();
-    gdl::RocketSync::EndSaveToHeader();
 }
