@@ -1,6 +1,6 @@
 # Makefile used by all PC platforms
 
-SRC_DIRS := . src/
+SRC_DIRS := .
 
 # Use only CXX to compile all files
 

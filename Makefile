@@ -1,3 +1,6 @@
+# The PC makefile is included so that KDevelop can
+# find the include directories
+include Makefile_pc.mk
 
 .PHONY: wii linux win mac cleanwii cleanlinux cleanwin cleanmac
 
