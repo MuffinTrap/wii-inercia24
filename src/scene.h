@@ -1,6 +1,7 @@
 #pragma once
 
 #include <mgdl.h>
+#include "camera.h"
 
 class Scene
 {
@@ -11,6 +12,8 @@ public:
 	void Draw();
 	void SaveTracks();
 
+	void DebugDraw3DSpace(float sideLength);
+
 	gdl::Scene* shipScene;
 	gdl::Image* shipTexture;
 	gdl::Image* spacebg;
@@ -18,5 +21,8 @@ public:
 	gdl::Mesh* terrain;
 	gdl::Font* debugFont;
 	gdl::Sound* spaceMusic;
+	Camera* camera;
+
+	gdl::Node* shipNode;
 
 };

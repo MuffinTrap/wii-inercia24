@@ -8,6 +8,10 @@
     static ROCKET_TRACK camera_x;
     static ROCKET_TRACK camera_y;
     static ROCKET_TRACK camera_z;
+    static ROCKET_TRACK camera_orbit_on;
+    static ROCKET_TRACK camera_orbit_x;
+    static ROCKET_TRACK camera_orbit_y;
+    static ROCKET_TRACK camera_orbit_dist;
 #endif
 
 void Scene::Init()
@@ -35,11 +39,29 @@ void Scene::Init()
     terrainNode->transform.scale = 1.0f;
     terrainNode->transform.Translate(gdl::vec3(-100.0f, -4.0f, -300.0f));
     shipScene->PushChildNode(terrainNode);
+    if (shipScene->GetRootNode() != nullptr)
+    {
+        shipNode = shipScene->GetNode("spaceship");
+        if (shipNode == nullptr)
+        {
+            printf("No spaceship node!\n");
+        }
+    }
+    else
+    {
+        printf("No root node set!\n");
+    }
+
+
+
+
     delete terrainPNG;
 
 
 
     debugFont = gdl::LoadFont("assets/font8x16.png", 8, 16, ' ');
+
+    camera = new Camera();
 
 	// Init rendering
     glEnable(GL_DEPTH_TEST);
@@ -62,6 +84,10 @@ void Scene::Init()
         camera_x = gdl::RocketSync::GetTrack("camera:x");
         camera_y = gdl::RocketSync::GetTrack("camera:y");
         camera_z = gdl::RocketSync::GetTrack("camera:z");
+        camera_orbit_on = gdl::RocketSync::GetTrack("camera:orbitON");
+        camera_orbit_x = gdl::RocketSync::GetTrack("camera:orbitX");
+        camera_orbit_y = gdl::RocketSync::GetTrack("camera:orbitY");
+        camera_orbit_dist = gdl::RocketSync::GetTrack("camera:orbitDistance");
 #endif
 
         gdl::RocketSync::StartSync();
@@ -71,6 +97,30 @@ void Scene::Init()
 void Scene::Update()
 {
     gdl::RocketSync::UpdateRow();
+
+    if (gdl::RocketSync::GetBool(camera_orbit_on))
+    {
+        if (shipNode != nullptr)
+        {
+            // TODO: Calculate actual position from parent nodes
+            camera->target = shipNode->transform.position;
+        }
+        // Offsets to the target
+        camera->target.x += gdl::RocketSync::GetFloat(camera_x);
+        camera->target.y += gdl::RocketSync::GetFloat(camera_y);
+        camera->target.z += gdl::RocketSync::GetFloat(camera_z);
+
+        camera->Orbit(gdl::RocketSync::GetFloat(camera_orbit_y),
+                      gdl::RocketSync::GetFloat(camera_orbit_x),
+                      gdl::RocketSync::GetFloat(camera_orbit_dist));
+
+    }
+    else
+    {
+        camera->position.x = gdl::RocketSync::GetFloat(camera_x);
+        camera->position.y = gdl::RocketSync::GetFloat(camera_y);
+        camera->position.z = gdl::RocketSync::GetFloat(camera_z);
+    }
 
 }
 
@@ -87,22 +137,9 @@ void Scene::Draw()
 	// Draw ship
 	gdl::InitPerspectiveProjection(75.0f, 0.1f, 500.0f);
 
-    gdl::vec3 cameraPos;
-    cameraPos.x = gdl::RocketSync::GetFloat(camera_x);
-    cameraPos.y = gdl::RocketSync::GetFloat(camera_y);
-    cameraPos.z = gdl::RocketSync::GetFloat(camera_z);
+    camera->LookAt();
 
-    gdl::InitCamera(
-        cameraPos,
-        gdl::vec3(0.0f, 0.0f, -1.0f),
-        gdl::vec3(0.0f, 1.0f, 0.0f));
     glPushMatrix();
-
-    glTranslatef(0.0f, -4.5f, -48.0f);
-    glRotatef(gdl::GetElapsedSeconds()* 5.0f, 1.0f, 0.0f, 0.0f);
-    glRotatef(gdl::GetElapsedSeconds()* 10.0f, 0.0f, 1.0f, 0.0f);
-    //glRotatef(gdl::GetElapsedSeconds()* 25.0f, 0.0f, 0.0f, 1.0f);
-    glScalef(0.1f, 0.1f, 0.1f);
 
     shipScene->Draw();
 
@@ -111,8 +148,48 @@ void Scene::Draw()
     glDisable(GL_DEPTH_TEST);
     gdl::InitOrthoProjection();
     shipScene->DebugDraw(debugFont, 10, gdl::GetScreenHeight() - 10);
+    camera->DebugDraw(10, gdl::GetScreenHeight()-gdl::GetScreenHeight()/2, debugFont);
 }
 void Scene::SaveTracks()
 {
     gdl::RocketSync::SaveAllTracks();
 }
+
+void Scene::DebugDraw3DSpace(float sideLength)
+{
+    glBegin(GL_LINES);
+    // ORIGO
+        glColor3f(0.2f, 1.0f, 0.2f);
+        glVertex3f(0.0f, 0.0f, 0.0f);
+        glVertex3f(0.0f, sideLength/2.0f, 0.0f);
+
+        glColor3f(1.0f, 0.2f, 0.2f);
+        glVertex3f(0.0f, 0.0f, 0.0f);
+        glVertex3f(sideLength/2.0f, 0.0f, 0.0f);
+
+        glColor3f(0.2f, 0.2f, 1.0f);
+        glVertex3f(0.0f, 0.0f, 0.0f);
+        glVertex3f(0.0f, 0.0f, sideLength/2.0f);
+
+    // BOX
+        glColor3f(0.7f, 0.7f, 0.7f);
+        glVertex3f(sideLength/2.0f, 0.0f, sideLength/2.0f);
+        glVertex3f(-sideLength/2.0f, 0.0f, sideLength/2.0f);
+
+        glVertex3f(-sideLength/2.0f, 0.0f, sideLength/2.0f);
+        glVertex3f(-sideLength/2.0f, 0.0f, -sideLength/2.0f);
+
+        glVertex3f(-sideLength/2.0f, 0.0f, -sideLength/2.0f);
+        glVertex3f(sideLength/2.0f, 0.0f, -sideLength/2.0f);
+
+        glVertex3f(sideLength/2.0f, sideLength/2.0f, sideLength/2.0f);
+        glVertex3f(-sideLength/2.0f, sideLength/2.0f, sideLength/2.0f);
+
+        glVertex3f(-sideLength/2.0f, sideLength/2.0f, sideLength/2.0f);
+        glVertex3f(-sideLength/2.0f, sideLength/2.0f, -sideLength/2.0f);
+
+        glVertex3f(-sideLength/2.0f, sideLength/2.0f, -sideLength/2.0f);
+        glVertex3f(sideLength/2.0f, sideLength/2.0f, -sideLength/2.0f);
+    glEnd();
+}
+

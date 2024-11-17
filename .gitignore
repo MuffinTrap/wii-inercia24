@@ -50,3 +50,6 @@ build/
 *.wo
 *.lo
 *.mo
+
+# Rocket tracks in .track format
+*.track

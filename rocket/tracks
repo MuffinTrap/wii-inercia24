@@ -1,14 +1,28 @@
 <sync rows="128">
 	<tracks>
 		<track name="camera:x">
-			<key interpolation="1" value="0" row="0"/>
-			<key interpolation="0" value="100" row="3"/>
+			<key interpolation="0" value="1" row="0"/>
 		</track>
 		<track name="camera:y">
-			<key interpolation="0" value="0" row="0"/>
+			<key interpolation="0" value="60" row="0"/>
 		</track>
 		<track name="camera:z">
 			<key interpolation="0" value="0" row="0"/>
+		</track>
+		<track name="camera:orbitON">
+			<key interpolation="0" value="1" row="0"/>
+		</track>
+		<track name="camera:orbitX">
+			<key interpolation="2" value="20" row="0"/>
+			<key interpolation="0" value="50" row="32"/>
+		</track>
+		<track name="camera:orbitY">
+			<key interpolation="1" value="0" row="0"/>
+			<key interpolation="0" value="340" row="32"/>
+		</track>
+		<track name="camera:orbitDistance">
+			<key interpolation="1" value="10" row="0"/>
+			<key interpolation="0" value="200" row="32"/>
 		</track>
 	</tracks>
 	<bookmarks/>
