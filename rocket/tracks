@@ -1,28 +1,113 @@
-<sync rows="128">
+<sync rows="256">
 	<tracks>
 		<track name="camera:x">
 			<key interpolation="0" value="1" row="0"/>
+			<key interpolation="0" value="79" row="88"/>
+			<key interpolation="0" value="10" row="160"/>
+			<key interpolation="0" value="0" row="161"/>
 		</track>
 		<track name="camera:y">
-			<key interpolation="0" value="60" row="0"/>
+			<key interpolation="0" value="6" row="0"/>
+			<key interpolation="0" value="30" row="88"/>
+			<key interpolation="0" value="4" row="160"/>
+			<key interpolation="0" value="8" row="161"/>
 		</track>
 		<track name="camera:z">
 			<key interpolation="0" value="0" row="0"/>
+			<key interpolation="0" value="139" row="88"/>
+			<key interpolation="0" value="10" row="160"/>
+			<key interpolation="0" value="0" row="161"/>
 		</track>
 		<track name="camera:orbitON">
 			<key interpolation="0" value="1" row="0"/>
+			<key interpolation="0" value="1" row="1"/>
+			<key interpolation="0" value="0" row="88"/>
+			<key interpolation="0" value="1" row="160"/>
+			<key interpolation="0" value="1" row="161"/>
 		</track>
 		<track name="camera:orbitX">
-			<key interpolation="2" value="20" row="0"/>
-			<key interpolation="0" value="50" row="32"/>
+			<key interpolation="2" value="13" row="0"/>
+			<key interpolation="1" value="13" row="24"/>
+			<key interpolation="1" value="13" row="40"/>
+			<key interpolation="0" value="5" row="47"/>
+			<key interpolation="0" value="0" row="88"/>
+			<key interpolation="0" value="0" row="160"/>
+			<key interpolation="0" value="0" row="161"/>
 		</track>
 		<track name="camera:orbitY">
-			<key interpolation="1" value="0" row="0"/>
-			<key interpolation="0" value="340" row="32"/>
+			<key interpolation="0" value="120" row="0"/>
+			<key interpolation="1" value="120" row="24"/>
+			<key interpolation="0" value="35" row="40"/>
+			<key interpolation="0" value="0" row="88"/>
+			<key interpolation="0" value="0" row="160"/>
+			<key interpolation="1" value="12" row="161"/>
+			<key interpolation="1" value="76" row="168"/>
+			<key interpolation="0" value="142" row="184"/>
 		</track>
 		<track name="camera:orbitDistance">
-			<key interpolation="1" value="10" row="0"/>
-			<key interpolation="0" value="200" row="32"/>
+			<key interpolation="0" value="22" row="0"/>
+			<key interpolation="1" value="22" row="40"/>
+			<key interpolation="0" value="34" row="44"/>
+			<key interpolation="0" value="0" row="88"/>
+			<key interpolation="0" value="1" row="160"/>
+			<key interpolation="1" value="48" row="161"/>
+			<key interpolation="0" value="90" row="168"/>
+		</track>
+		<track name="door:hangar">
+			<key interpolation="1" value="-11" row="0"/>
+			<key interpolation="0" value="-36" row="15"/>
+		</track>
+		<track name="door:elevator">
+			<key interpolation="0" value="-14" row="0"/>
+			<key interpolation="1" value="-14" row="120"/>
+			<key interpolation="0" value="-37" row="144"/>
+		</track>
+		<track name="door:hangarX">
+			<key interpolation="0" value="-12" row="0"/>
+		</track>
+		<track name="door:elevatorX">
+			<key interpolation="0" value="79" row="0"/>
+			<key interpolation="0" value="79" row="120"/>
+		</track>
+		<track name="platform:x">
+			<key interpolation="0" value="8" row="0"/>
+			<key interpolation="3" value="8" row="16"/>
+			<key interpolation="0" value="80" row="39"/>
+		</track>
+		<track name="platform:y">
+			<key interpolation="0" value="-37" row="0"/>
+			<key interpolation="1" value="-37" row="120"/>
+			<key interpolation="0" value="4" row="152"/>
+		</track>
+		<track name="platform:z">
+			<key interpolation="0" value="-42" row="0"/>
+			<key interpolation="1" value="-42" row="39"/>
+			<key interpolation="0" value="190" row="80"/>
+		</track>
+		<track name="platform:rotY">
+			<key interpolation="1" value="270" row="0"/>
+			<key interpolation="1" value="270" row="38"/>
+			<key interpolation="0" value="180" row="56"/>
+			<key interpolation="1" value="180" row="80"/>
+			<key interpolation="0" value="0" row="88"/>
+		</track>
+		<track name="ship:x">
+			<key interpolation="0" value="0" row="0"/>
+		</track>
+		<track name="ship:y">
+			<key interpolation="0" value="11" row="0"/>
+		</track>
+		<track name="ship:z">
+			<key interpolation="0" value="0" row="0"/>
+		</track>
+		<track name="ship:rotX">
+			<key interpolation="0" value="0" row="0"/>
+		</track>
+		<track name="ship:rotY">
+			<key interpolation="0" value="0" row="0"/>
+		</track>
+		<track name="ship:rotZ">
+			<key interpolation="0" value="0" row="0"/>
 		</track>
 	</tracks>
 	<bookmarks/>

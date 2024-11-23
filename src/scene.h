@@ -14,15 +14,21 @@ public:
 
 	void DebugDraw3DSpace(float sideLength);
 
-	gdl::Scene* shipScene;
-	gdl::Image* shipTexture;
-	gdl::Image* spacebg;
-	gdl::Image* heightMap;
-	gdl::Mesh* terrain;
-	gdl::Font* debugFont;
-	gdl::Sound* spaceMusic;
-	Camera* camera;
+	gdl::Scene* shipScene = nullptr;
+	gdl::Image* shipTexture = nullptr;
+	gdl::Image* spacebg = nullptr;
+	gdl::Image* heightMap = nullptr;
+	gdl::Mesh* terrain = nullptr;
+	gdl::Font* debugFont = nullptr;
+	gdl::Sound* spaceMusic = nullptr;
+	Camera* camera = nullptr;
 
-	gdl::Node* shipNode;
+	gdl::Node* shipNode = nullptr;
+	gdl::Node* hangarDoorLeft = nullptr;
+	gdl::Node* hangarDoorRight = nullptr;
+	gdl::Node* elevatorDoorLeft = nullptr;
+	gdl::Node* elevatorDoorRight = nullptr;
+	gdl::Node* elevatorPlatform = nullptr;
+
 
 };
