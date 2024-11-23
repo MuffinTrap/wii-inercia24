@@ -43,9 +43,11 @@ void Scene::Init()
 
 	// SHIP
 	shipTexture = gdl::LoadImage("assets/spaceship.png", gdl::TextureFilterModes::Nearest);
+	portTexture = gdl::LoadImage("assets/spaceport.png", gdl::TextureFilterModes::Nearest);
     gdl::FBXFile* shipFbx = new gdl::FBXFile();
     shipScene = shipFbx->LoadFile("assets/spaceship.fbx");
     shipScene->SetMaterialTexture("spaceship.png", shipTexture);
+    shipScene->SetMaterialTexture("spaceport.png", portTexture);
 
 	// BG
 	spacebg = gdl::LoadImage("assets/spacebg.png", gdl::TextureFilterModes::Linear);

@@ -16,6 +16,7 @@ public:
 
 	gdl::Scene* shipScene = nullptr;
 	gdl::Image* shipTexture = nullptr;
+	gdl::Image* portTexture = nullptr;
 	gdl::Image* spacebg = nullptr;
 	gdl::Image* heightMap = nullptr;
 	gdl::Mesh* terrain = nullptr;
