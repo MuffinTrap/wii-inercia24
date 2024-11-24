@@ -11,6 +11,8 @@ public:
 	void Update();
 	void Draw();
 	void SaveTracks();
+	void DrawFadeOut();
+	bool ShouldQuit();
 
 	void DebugDraw3DSpace(float sideLength);
 
@@ -22,6 +24,7 @@ public:
 	gdl::Mesh* terrain = nullptr;
 	gdl::Font* debugFont = nullptr;
 	gdl::Sound* spaceMusic = nullptr;
+	gdl::Font* dotFont = nullptr;
 	Camera* camera = nullptr;
 
 	gdl::Node* shipNode = nullptr;
@@ -31,5 +34,6 @@ public:
 	gdl::Node* elevatorDoorRight = nullptr;
 	gdl::Node* elevatorPlatform = nullptr;
 
+	gdl::MenuCreator DebugMenu;
 
 };

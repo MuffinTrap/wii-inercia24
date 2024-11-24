@@ -1,5 +1,21 @@
 <sync rows="256">
 	<tracks>
+		<track name="showDepartures">
+			<key interpolation="0" value="1" row="0"/>
+		</track>
+		<track name="fade_out">
+			<key interpolation="0" value="0" row="0"/>
+		</track>
+		<track name="end_demo">
+			<key interpolation="0" value="0" row="0"/>
+		</track>
+		<track name="departureText">
+			<key interpolation="0" value="1" row="0"/>
+		</track>
+		<track name="departureScroll">
+			<key interpolation="1" value="640" row="0"/>
+			<key interpolation="0" value="-1100" row="24"/>
+		</track>
 		<track name="camera:x">
 			<key interpolation="0" value="1" row="0"/>
 			<key interpolation="0" value="79" row="88"/>

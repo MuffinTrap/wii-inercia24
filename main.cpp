@@ -34,7 +34,7 @@ void update()
         scene.SaveTracks();
     }
 #endif
-    if (gdl::GetController(0).ButtonPress(gdl::WiiButtons::ButtonHome))
+    if (gdl::GetController(0).ButtonPress(gdl::WiiButtons::ButtonHome) || scene.ShouldQuit())
     {
         gdl::Platform& plat = gdl::Platform::GetPlatform();
         gdl::RocketSync::Disconnect();

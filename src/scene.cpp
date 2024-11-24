@@ -6,6 +6,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #ifndef SYNC_PLAYER
+
+    static ROCKET_TRACK showDepartures;
+    static ROCKET_TRACK fade_out;
+    static ROCKET_TRACK end_demo;
+    static ROCKET_TRACK departureText;
+    static ROCKET_TRACK departureScroll;
+
+
     static ROCKET_TRACK camera_x;
     static ROCKET_TRACK camera_y;
     static ROCKET_TRACK camera_z;
@@ -103,12 +111,15 @@ void Scene::Init()
 
 
 
-
-
     debugFont = gdl::LoadFont("assets/font8x16.png", 8, 16, ' ');
-
+    // dotFont = gdl::LoadFontCustom("assets/dot_font.png", 44,64, '1', 10);
+    dotFont = gdl::LoadFontCustom("assets/led_counter50x64_v2.png", 50,64, 10, " -./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
     camera = new Camera();
     camera->lerpSpeed = 1.0f;
+
+
+
+    DebugMenu = gdl::MenuCreator(debugFont, 1.0f, 1.0);
 
 	// Init rendering
     glEnable(GL_DEPTH_TEST);
@@ -128,6 +139,13 @@ void Scene::Init()
     if (rocketInit)
     {
 #ifndef SYNC_PLAYER
+
+        showDepartures = gdl::RocketSync::GetTrack("showDepartures");
+        fade_out = gdl::RocketSync::GetTrack("fade_out");
+        end_demo = gdl::RocketSync::GetTrack("end_demo");
+        departureText = gdl::RocketSync::GetTrack("departureText");
+        departureScroll = gdl::RocketSync::GetTrack("departureScroll");
+
         camera_x = gdl::RocketSync::GetTrack("camera:x");
         camera_y = gdl::RocketSync::GetTrack("camera:y");
         camera_z = gdl::RocketSync::GetTrack("camera:z");
@@ -214,6 +232,15 @@ void Scene::Update()
     }
     camera->Update(gdl::GetDeltaTime());
 
+    //NOTE Controller info valid only on update!
+    {
+        gdl::ControllerVec2 cp = gdl::GetController(0).GetCursorPosition();
+        // flip
+        float h = gdl::GetScreenHeight();
+        cp.yAxis = h-cp.yAxis;
+        bool press = gdl::GetController(0).ButtonPress(gdl::WiiButtons::ButtonA);
+        DebugMenu.StartMenu(0, gdl::GetScreenHeight(), 100, cp.xAxis, cp.yAxis, press);
+    }
 }
 
 void Scene::Draw()
@@ -223,30 +250,103 @@ void Scene::Draw()
 	gdl::InitOrthoProjection();
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-	spacebg->Draw2DAbsolute(-1, -1, gdl::GetScreenWidth()+1, gdl::GetScreenHeight()+1);
 
-    glEnable(GL_DEPTH_TEST);
-	// Draw ship
-	gdl::InitPerspectiveProjection(75.0f, 0.1f, 1000.0f);
+    bool inside = gdl::RocketSync::GetBool(showDepartures);
+    if (inside)
+    {
+        std::string text;
+        u32 color = gdl::Colors::Yellow;
+        switch(gdl::RocketSync::GetInt(departureText))
+        {
+            case 0:
+                text = "MS 2024";
+                break;
+            case 1:
+                text = "INERCIA STATION/EUROPA";
+                break;
+            case 2:
+                text = "GATE CLOSING";
+                color = gdl::Colors::Red;
+                break;
 
-    camera->LookAt();
+        }
+        dotFont->Print(color, gdl::RocketSync::GetInt(departureScroll), gdl::GetScreenHeight()-64, 64, gdl::LJustify, gdl::LJustify, text.c_str());
+    }
+    else
+    {
 
-    glPushMatrix();
+        spacebg->Draw2DAbsolute(-1, -1, gdl::GetScreenWidth()+1, gdl::GetScreenHeight()+1);
 
-    shipScene->Draw();
+        glEnable(GL_DEPTH_TEST);
+        // Draw ship
+        gdl::InitPerspectiveProjection(75.0f, 0.1f, 1000.0f);
 
-    glPopMatrix();
+        camera->LookAt();
 
-    glDisable(GL_DEPTH_TEST);
+        glPushMatrix();
+
+            shipScene->Draw();
+
+        glPopMatrix();
+
+        glDisable(GL_DEPTH_TEST);
+
+    }
     gdl::InitOrthoProjection();
-    shipScene->DebugDraw(debugFont, 10, gdl::GetScreenHeight() - 10, gdl::Scene::DebugFlag::Position);
-    camera->DebugDraw(gdl::GetScreenWidth()/2, gdl::GetScreenHeight()-gdl::GetScreenHeight()/2, debugFont);
+    DrawFadeOut();
+
+
+#ifndef SYNC_PLAYER
+
+    {
+        static bool showScene = false;
+        if (DebugMenu.Button("Scenegraph"))
+        {
+            showScene = !showScene;
+        }
+        if (showScene)
+        {
+            shipScene->DebugDraw(debugFont, 10, gdl::GetScreenHeight() - 10, gdl::Scene::DebugFlag::Position);
+        }
+    }
+
+    //camera->DebugDraw(gdl::GetScreenWidth()/2, gdl::GetScreenHeight()-gdl::GetScreenHeight()/2, debugFont);
+
+#endif
+
 }
 void Scene::SaveTracks()
 {
     gdl::RocketSync::SaveAllTracks();
 }
 
+bool Scene::ShouldQuit()
+{
+    return gdl::RocketSync::GetBool(end_demo);
+}
+
+
+void Scene::DrawFadeOut()
+{
+	float fade = gdl::RocketSync::GetFloat(fade_out);
+	if (fade > 0.0f)
+	{
+		float W = gdl::GetScreenWidth();
+		float H = gdl::GetScreenHeight();
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        glColor4f(0.0f, 0.0f, 0.0f, fade);
+		glBegin(GL_QUADS);
+			glVertex3f(-W, H, -0.9999f);
+			glVertex3f(-W, -H, -0.9999f);
+			glVertex3f(W, -H, -0.9999f);
+			glVertex3f(W, H, -0.9999f);
+		glEnd();
+		glDisable(GL_BLEND);
+	}
+}
 void Scene::DebugDraw3DSpace(float sideLength)
 {
     glBegin(GL_LINES);
