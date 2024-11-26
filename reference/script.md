@@ -1,38 +1,64 @@
 Marmot Spacelines Flight 2024 to Inercia Station, Europa.
 
-**FADE IN**
-
-**CUTS BETWEEN SCENES 0 and 1**
-SCENE 0 IN THE BEGINNING AND WHEN ANNOUNCER IS SPEAKING
-
-### 0. EXT. MOON SURFACE - DARK
-
-Camera rolls over moon surface towards a spaceport in the distance.
-The camera arrives at the spaceport.
-There are two parallel runways on different sides of a central building. 
-The flight control tower is on top of the central building. 
-Control tower has windows up high and a rotating radar bar on top of the tower.
+**BLACK SCREEN**
 
 ### 1 INT. SPACEPORT DEPARTURES HALL - BRIGHT LIGHTS
+
+We can hear ambient sounds of an airport departures hall, people walking
+and talking. The sounds have a long reverb.
 
 	**ANNOUNCER (V.O.)**
 Attention! Passengers to Marmot Spacelines flight Mike Sierra Two Zero Two Four....
 
-Text is shown on a dot matrix display, yellow
+**FADE IN**
+
+As the announcer is speaking, 
+the Camera is looking up towards a departures display board 
+in a large grey departures hall of the spaceport.
+
+Display board reads:
+DEPARTURES
+
+There are separate columns with headings:
+FLIGHT	/  TO  / GATE  / STATUS
+
+Under the headings are multiple cells of dot matrix displays.
+
+Text is shown on the first row, first column in yellow
+"MARMOT SPACELINES"
+
+and then it changes to
+
 "MS 2024"
+
+As the announcer speaks, camera turns to the right to see the rest of the columns 
+and their information
 
 	**ANNOUNCER (V.O.)**
 ... to Inercia Station, Europa...
 
-Text is shown on a dot matrix display, yellow
+
+> Voice actor Notes: 
+> "Inercia" is Portuguese, meaning "Inertia"
+> Pronounced Iner-Zia, [Listen to google translate](https://translate.google.com/?sl=pt-PT&tl=en&text=Inercia&op=translate)
+> Europa is a moon of Jupiter. [Listen to pronunciation in Wikipepia](https://en.wikipedia.org/wiki/Europa_(moon))
+
+
+Text is shown on a dot matrix display, first row, second column, yellow
 "INERCIA STATION / EUROPA"
 
 
 	**ANNOUNCER (V.O.)**
 ... The Gate is closing.
 
-Text is shown on a dot matrix display, red
-GATE CLOSING
+Text is shown on display, first row, third column, in white
+"A5"
+
+Text is shown on a dot matrix display, fourth column, in green
+"BOARDING
+
+it then changes to display, in red
+"GATE CLOSING"
 
 **CUT**
 
@@ -109,6 +135,15 @@ Proceed to runway elevator. Over.
 
 ### 4. EXT. STARPORT ON LUNA SURFACE. RUNWAY ONE - DARK
 
+Camera looks at a warning light beacon next to the elevator
+hatch. The warning light goes on.
+
+Camera slowly moves back and up to show moon surface and the spaceport.
+The camera orbits around the spaceport
+There are two parallel runways on different sides of a central building. 
+The flight control tower is on top of the central building. 
+Control tower has windows up high and a rotating radar bar on top of the tower.
+
 Camera is looking down on the start of runway one.
 The elevator hatch is closed.
 Elevator hatch opens. 
@@ -143,8 +178,17 @@ Camera orbits to the side and away from the ship.
 
 Ship moves along the runway, gaining altitude. The landing gear is raised. 
 Camera follows along with the ship until end of the runway. 
-When the ship is cleared the runway the main engine fires up fully and the ship launches upwards into the space. 
-Camera looks at the ship but no longer moves.
+When the ship is cleared the runway the main engine fires up fully and the ship launches upwards into the space.
+
+**CUT**
+
+Camera is up in the air, next to the path of the ship. The ship accelerates towards the camera and almost 
+passes it.
+
+**CUT**
+
+Camera is far away from the spaceport, looking up at the departing ship. 
+Only the engine flare is visible among the stars
 
 **CUT TO.**
 
