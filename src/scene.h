@@ -3,6 +3,15 @@
 #include <mgdl.h>
 #include "camera.h"
 
+enum DrawScene : int
+{
+	Spaceport = 0,
+	Departures  = 1,
+	Terrain = 2,
+	Earth = 3,
+	Gate = 4
+};
+
 class Scene
 {
 	// This has all the models and textures etc.
@@ -14,7 +23,12 @@ public:
 	void DrawFadeOut();
 	bool ShouldQuit();
 
+	// Scene drawing functions
+	void DrawDeparturesScene();
+	void DrawSpaceportScene();
+
 	void DebugDraw3DSpace(float sideLength);
+	void DebugDrawTiming();
 
 	gdl::Scene* shipScene = nullptr;
 	gdl::Image* shipTexture = nullptr;
@@ -33,6 +47,7 @@ public:
 	gdl::Node* elevatorDoorLeft = nullptr;
 	gdl::Node* elevatorDoorRight = nullptr;
 	gdl::Node* elevatorPlatform = nullptr;
+	gdl::Node* terrainNode = nullptr;
 
 	gdl::MenuCreator DebugMenu;
 

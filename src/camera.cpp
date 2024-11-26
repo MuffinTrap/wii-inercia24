@@ -42,15 +42,22 @@ void Camera::LookAt()
 	gdl::InitCamera(currentPosition, target, up);
 }
 
-void Camera::Update(float delta)
+void Camera::Update(float delta, bool doInterpolate, float wiggleSpeed)
 {
-	// Move towards position
-	float mx = position.x-currentPosition.x;
-	float my = position.y-currentPosition.y;
-	float mz = position.z-currentPosition.z;
-	currentPosition.x += mx * delta * lerpSpeed;
-	currentPosition.y += my * delta * lerpSpeed;
-	currentPosition.z += mz * delta * lerpSpeed;
+	if (doInterpolate)
+	{
+		// Move towards position
+		float mx = position.x-currentPosition.x;
+		float my = position.y-currentPosition.y;
+		float mz = position.z-currentPosition.z;
+		currentPosition.x += mx * delta * lerpSpeed;
+		currentPosition.y += my * delta * lerpSpeed;
+		currentPosition.z += mz * delta * lerpSpeed;
+	}
+	else
+	{
+		currentPosition = position;
+	}
 }
 
 void Camera::DebugDraw (short x, short y, gdl::Font* font )

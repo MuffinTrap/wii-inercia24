@@ -9,6 +9,8 @@ and talking. The sounds have a long reverb.
 
 	**ANNOUNCER (V.O.)**
 Attention! Passengers to Marmot Spacelines flight Mike Sierra Two Zero Two Four....
+... to Inercia Station, Europa...
+... The Gate is closing.
 
 **FADE IN**
 
@@ -123,13 +125,13 @@ Camera follows ship until it reaches the elevator to runway.
 Ship turns 180 degrees to the right.
 
 	**PILOT (V.O.)**
-Tower, Mike Sierra Two Zero Two Four. Holding short on runway one. Ready to proceed to launch. Over.
+Tower, Mike Sierra Two Zero Two Four. Holding short on runway one. Ready to proceed to elevator. Over.
 
 	**TOWER (V.O.)**
-Mike Sierra Two Zero Two Four. Proceed to runway elevator. Over.
+Mike Sierra Two Zero Two Four. Tower. Proceed to elevator. Over.
 
 	**PILOT (V.O.)**
-Proceed to runway elevator. Over.
+Proceed to elevator. Over.
 
 **CUT TO**
 
@@ -161,10 +163,10 @@ White strobe light appears on the top of the craft and a solid white light appea
 Guide lights run along the runway away from the ship. One guide light on either side.
 
 	**PILOT (V.O.)**
-Tower, Mike Sierra Two Zero Two Four. Launch checklist cleared. Ready for takeoff. Over.
+Tower, Mike Sierra Two Zero Two Four. Runway one. Ready for takeoff. Over.
 
 	**TOWER (V.O.)**
-Mike Sierra Two Zero Two Four. Runway one, cleared for takeoff.
+Mike Sierra Two Zero Two Four. Tower. Runway one. You are cleared for takeoff.
 
 	**PILOT (V.O.)**
 Cleared for takeoff runway one.
@@ -201,7 +203,7 @@ In the background Earth is seen rising up as the ship moves forward.
 	**PILOT (V.O.)**
 "Dear passengers. Welcome to Marmot Spacelines flight Two Zero Two Four to Inercia station, Europa. 
 We are about to slingshot around the moon. Please remain seated and keep your seatbelts on until Zero G light is turned on. 
-Our subjective flight time is one week, two days and fourteen hours. Arrival will be in four sixteen hours standard time.
+Our flight duration is one week, two days and fourteen hours. Arrival will be in four days sixteen hours standard time.
 
 Thank you and have a pleasant flight."
 

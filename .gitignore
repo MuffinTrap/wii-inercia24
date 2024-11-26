@@ -53,3 +53,6 @@ build/
 
 # Rocket tracks in .track format
 *.track
+
+# Too larget for git
+*.wav

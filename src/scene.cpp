@@ -7,11 +7,17 @@
 
 #ifndef SYNC_PLAYER
 
-    static ROCKET_TRACK showDepartures;
+    static ROCKET_TRACK sceneNumber;
     static ROCKET_TRACK fade_out;
     static ROCKET_TRACK end_demo;
-    static ROCKET_TRACK departureText;
-    static ROCKET_TRACK departureScroll;
+
+    static ROCKET_TRACK departure_text;
+    static ROCKET_TRACK departure_textScale;
+    static ROCKET_TRACK departure_textX;
+    static ROCKET_TRACK departure_textY;
+    static ROCKET_TRACK departure_width;
+    static ROCKET_TRACK departure_height;
+    static ROCKET_TRACK departure_depth;
 
 
     static ROCKET_TRACK camera_x;
@@ -21,6 +27,10 @@
     static ROCKET_TRACK camera_orbit_x;
     static ROCKET_TRACK camera_orbit_y;
     static ROCKET_TRACK camera_orbit_dist;
+    static ROCKET_TRACK camera_speed;
+    static ROCKET_TRACK camera_interpolateOn;
+    static ROCKET_TRACK camera_wiggle;
+
 
 
     // Ship hangar doors
@@ -44,6 +54,13 @@
     static ROCKET_TRACK ship_rotX;
     static ROCKET_TRACK ship_rotY;
     static ROCKET_TRACK ship_rotZ;
+    static ROCKET_TRACK ship_scale;
+
+    // Terrain
+    static ROCKET_TRACK terrain_x;
+    static ROCKET_TRACK terrain_y;
+    static ROCKET_TRACK terrain_z;
+    static ROCKET_TRACK terrain_scale;
 #endif
 
 void Scene::Init()
@@ -69,7 +86,7 @@ void Scene::Init()
 
     // Make terrain part of the ship scene
     shipScene->SetActiveParentNode(shipScene->GetRootNode());
-    gdl::Node* terrainNode = new gdl::Node("terrain", terrain, new gdl::Material("terrain", heightMap));
+    terrainNode = new gdl::Node("terrain", terrain, new gdl::Material("terrain", heightMap));
     terrainNode->transform.scale = 1.0f;
     terrainNode->transform.Translate(gdl::vec3(-100.0f, -4.0f, -300.0f));
     shipScene->PushChildNode(terrainNode);
@@ -112,11 +129,13 @@ void Scene::Init()
 
 
     debugFont = gdl::LoadFont("assets/font8x16.png", 8, 16, ' ');
+    gdl_assert_print(debugFont != nullptr, "Debug font failed to load");
+
     // dotFont = gdl::LoadFontCustom("assets/dot_font.png", 44,64, '1', 10);
     dotFont = gdl::LoadFontCustom("assets/led_counter50x64_v2.png", 50,64, 10, " -./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-    camera = new Camera();
-    camera->lerpSpeed = 1.0f;
+    gdl_assert_print(dotFont != nullptr, "Dot font failed to load");
 
+    camera = new Camera();
 
 
     DebugMenu = gdl::MenuCreator(debugFont, 1.0f, 1.0);
@@ -135,16 +154,24 @@ void Scene::Init()
 #else
     spaceMusic = gdl::LoadSound("assets/spacemusic.wav");
 #endif
-    bool rocketInit = gdl::RocketSync::InitRocket(spaceMusic, 72, 4);
+    bool rocketInit = gdl::RocketSync::InitRocket(spaceMusic, 68, 4);
     if (rocketInit)
     {
 #ifndef SYNC_PLAYER
 
-        showDepartures = gdl::RocketSync::GetTrack("showDepartures");
+        sceneNumber = gdl::RocketSync::GetTrack("scene");
         fade_out = gdl::RocketSync::GetTrack("fade_out");
         end_demo = gdl::RocketSync::GetTrack("end_demo");
-        departureText = gdl::RocketSync::GetTrack("departureText");
-        departureScroll = gdl::RocketSync::GetTrack("departureScroll");
+
+        // Departures board
+        departure_text = gdl::RocketSync::GetTrack("departure:text");
+        departure_textX = gdl::RocketSync::GetTrack("departure:textX");
+        departure_textY = gdl::RocketSync::GetTrack("departure:textY");
+        departure_textScale = gdl::RocketSync::GetTrack("departure:textScale");
+        // Board dimensions
+        departure_width = gdl::RocketSync::GetTrack("departure:width");
+        departure_height = gdl::RocketSync::GetTrack("departure:height");
+        departure_depth = gdl::RocketSync::GetTrack("departure:depth");
 
         camera_x = gdl::RocketSync::GetTrack("camera:x");
         camera_y = gdl::RocketSync::GetTrack("camera:y");
@@ -153,6 +180,9 @@ void Scene::Init()
         camera_orbit_x = gdl::RocketSync::GetTrack("camera:orbitX");
         camera_orbit_y = gdl::RocketSync::GetTrack("camera:orbitY");
         camera_orbit_dist = gdl::RocketSync::GetTrack("camera:orbitDistance");
+        camera_speed = gdl::RocketSync::GetTrack("camera:speed");
+        camera_interpolateOn = gdl::RocketSync::GetTrack("camera:interpolateOn");
+        camera_wiggle = gdl::RocketSync::GetTrack("camera:wiggle");
 
         // Doors to hangar
         door_hangar = gdl::RocketSync::GetTrack("door:hangar");
@@ -175,6 +205,13 @@ void Scene::Init()
         ship_rotX = gdl::RocketSync::GetTrack("ship:rotX");
         ship_rotY = gdl::RocketSync::GetTrack("ship:rotY");
         ship_rotZ = gdl::RocketSync::GetTrack("ship:rotZ");
+        ship_scale = gdl::RocketSync::GetTrack("ship:scale");
+
+
+        terrain_x = gdl::RocketSync::GetTrack("terrain:x");
+        terrain_y = gdl::RocketSync::GetTrack("terrain:y");
+        terrain_z = gdl::RocketSync::GetTrack("terrain:z");
+        terrain_scale = gdl::RocketSync::GetTrack("terrain:scale");
 #endif
 
         gdl::RocketSync::StartSync();
@@ -193,6 +230,10 @@ void Scene::Update()
     shipNode->transform.rotationDegrees.y = gdl::RocketSync::GetFloat(ship_rotY);
     shipNode->transform.rotationDegrees.z = gdl::RocketSync::GetFloat(ship_rotZ);
 
+    gdl::vec3 tpos = gdl::vec3(gdl::RocketSync::GetFloat(terrain_x), gdl::RocketSync::GetFloat(terrain_y), gdl::RocketSync::GetFloat(terrain_z));
+    terrainNode->transform.position = tpos;
+    terrainNode->transform.scale = gdl::RocketSync::GetFloat(terrain_scale);
+
     elevatorPlatform->transform.position.x = gdl::RocketSync::GetFloat(platform_x);
     elevatorPlatform->transform.position.y = gdl::RocketSync::GetFloat(platform_y);
     elevatorPlatform->transform.position.z = gdl::RocketSync::GetFloat(platform_z);
@@ -207,31 +248,40 @@ void Scene::Update()
     elevatorDoorLeft->transform.position.x = elevator_open + elevator_offset;
     elevatorDoorRight->transform.position.x = elevator_open * -1.0f + elevator_offset;
 
+    // Camera update
     // NOTE: Update camera after updating target to avoid jitter
-    if (gdl::RocketSync::GetBool(camera_orbit_on))
-    {
 
-        gdl::vec3 shipPos = shipScene->GetWorldPosition(shipNode);
-        camera->target = shipPos;
+    DrawScene scene = (DrawScene)gdl::RocketSync::GetInt(sceneNumber);
+    switch(scene)
+    {
+        case Departures:
+            camera->target = gdl::vec3(0.0f, 0.0f, 0.0f);
+            break;
+
+        default:
+            gdl::vec3 shipPos = shipScene->GetWorldPosition(shipNode);
+            camera->target = shipPos;
+        break;
+    }
 
         // Offsets to the target
         camera->target.x += gdl::RocketSync::GetFloat(camera_x);
         camera->target.y += gdl::RocketSync::GetFloat(camera_y);
         camera->target.z += gdl::RocketSync::GetFloat(camera_z);
 
+    if (gdl::RocketSync::GetBool(camera_orbit_on))
+    {
         camera->Orbit(gdl::RocketSync::GetFloat(camera_orbit_y),
                       gdl::RocketSync::GetFloat(camera_orbit_x),
                       gdl::RocketSync::GetFloat(camera_orbit_dist));
-
     }
-    else
-    {
-        camera->position.x = gdl::RocketSync::GetFloat(camera_x);
-        camera->position.y = gdl::RocketSync::GetFloat(camera_y);
-        camera->position.z = gdl::RocketSync::GetFloat(camera_z);
-    }
-    camera->Update(gdl::GetDeltaTime());
+    bool doInterpolate = gdl::RocketSync::GetBool(camera_interpolateOn);
+    float wiggle = gdl::RocketSync::GetFloat(camera_wiggle);
+    float speed = gdl::RocketSync::GetFloat(camera_speed);
+    camera->lerpSpeed = speed;
+    camera->Update(gdl::GetDeltaTime(), doInterpolate, wiggle);
 
+#ifndef SYNC_PLAYER
     //NOTE Controller info valid only on update!
     {
         gdl::ControllerVec2 cp = gdl::GetController(0).GetCursorPosition();
@@ -241,63 +291,39 @@ void Scene::Update()
         bool press = gdl::GetController(0).ButtonPress(gdl::WiiButtons::ButtonA);
         DebugMenu.StartMenu(0, gdl::GetScreenHeight(), 100, cp.xAxis, cp.yAxis, press);
     }
+#endif
 }
 
 void Scene::Draw()
 {
-	// Draw Full screen bg
-	glDisable(GL_DEPTH_TEST);
-	gdl::InitOrthoProjection();
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    bool inside = gdl::RocketSync::GetBool(showDepartures);
-    if (inside)
+    DrawScene scene = (DrawScene)gdl::RocketSync::GetInt(sceneNumber);
+    switch(scene)
     {
-        std::string text;
-        u32 color = gdl::Colors::Yellow;
-        switch(gdl::RocketSync::GetInt(departureText))
-        {
-            case 0:
-                text = "MS 2024";
-                break;
-            case 1:
-                text = "INERCIA STATION/EUROPA";
-                break;
-            case 2:
-                text = "GATE CLOSING";
-                color = gdl::Colors::Red;
-                break;
+        case Spaceport:
+            DrawSpaceportScene();
+            break;
 
-        }
-        dotFont->Print(color, gdl::RocketSync::GetInt(departureScroll), gdl::GetScreenHeight()-64, 64, gdl::LJustify, gdl::LJustify, text.c_str());
-    }
-    else
-    {
+        case Departures:
+            DrawDeparturesScene();
+            break;
 
-        spacebg->Draw2DAbsolute(-1, -1, gdl::GetScreenWidth()+1, gdl::GetScreenHeight()+1);
 
-        glEnable(GL_DEPTH_TEST);
-        // Draw ship
-        gdl::InitPerspectiveProjection(75.0f, 0.1f, 1000.0f);
+        case Terrain:
 
-        camera->LookAt();
+            break;
 
-        glPushMatrix();
+        case Earth:
 
-            shipScene->Draw();
+            break;
 
-        glPopMatrix();
+        case Gate:
 
-        glDisable(GL_DEPTH_TEST);
-
+            break;
     }
     gdl::InitOrthoProjection();
     DrawFadeOut();
 
-
 #ifndef SYNC_PLAYER
-
     {
         static bool showScene = false;
         if (DebugMenu.Button("Scenegraph"))
@@ -308,13 +334,116 @@ void Scene::Draw()
         {
             shipScene->DebugDraw(debugFont, 10, gdl::GetScreenHeight() - 10, gdl::Scene::DebugFlag::Position);
         }
+        DebugDrawTiming();
     }
-
     //camera->DebugDraw(gdl::GetScreenWidth()/2, gdl::GetScreenHeight()-gdl::GetScreenHeight()/2, debugFont);
-
 #endif
-
 }
+
+static float Display(gdl::Font* font, float x, float y, u32 color, float scale, const std::string& text)
+{
+    font->Print(color, x, y, scale, gdl::LJustify, gdl::LJustify, text.c_str());
+    return scale * text.length();
+}
+
+void Scene::DrawDeparturesScene()
+{
+    glEnable(GL_DEPTH_TEST);
+    gdl::InitPerspectiveProjection(75.0f, 0.1f, 1000.0f);
+    camera->LookAt();
+
+    glPushMatrix();
+        // Draw departures display
+        glColor3f(0.1f, 0.1f, 0.1f);
+        glScalef(
+            gdl::RocketSync::GetFloat(departure_width),
+            gdl::RocketSync::GetFloat(departure_height),
+            gdl::RocketSync::GetFloat(departure_depth)
+        );
+        glutSolidCube(1.0f);
+    glPopMatrix();
+
+    glPushMatrix();
+        // Draw text on the display surface
+        glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+        glTranslatef(
+            gdl::RocketSync::GetFloat(departure_textX),
+            gdl::RocketSync::GetFloat(departure_textY),
+            gdl::RocketSync::GetFloat(departure_depth)/2.0 + 0.01f
+        );
+
+        static const std::string company = "MARMOT SPACELINES";
+        static const std::string callsign = "MS 2024";
+        static const std::string destination = "INERCIA ST./EUROPA";
+        static const std::string gate = "A5";
+        static const std::string boarding = "BOARDING";
+        static const std::string closing = "GATE CLOSING";
+
+        u32 red = gdl::Colors::Red;
+        u32 green = gdl::Colors::LightGreen;
+        u32 white = gdl::Colors::White;
+        u32 yellow = gdl::Colors::Yellow;
+
+        float scale = 1.0f + gdl::RocketSync::GetFloat(departure_textScale);
+        // Draw company or callsign
+        float x = 0;
+        float y = 0;
+
+        Display(dotFont, x, y, white, scale, "FLIGHT                DESTINATION            GATE STATUS");
+        y -= scale;
+
+        int showText = gdl::RocketSync::GetInt(departure_text);
+
+        if (showText == 0)
+        {
+            Display(dotFont, x, y, yellow, scale, company);
+        }
+        else
+        {
+            Display(dotFont, x, y, yellow, scale, callsign);
+        }
+
+        float nameLength = (company.length()) * scale;
+        x += nameLength;
+        x += Display(dotFont, x, y, yellow, scale, destination );
+        x += Display(dotFont, x, y, white, scale, gate ) + 2 * scale;
+        if (showText == 1)
+        {
+            Display(dotFont, x, y, green, scale, boarding );
+        }
+        else
+        {
+            Display(dotFont, x, y, red, scale, closing );
+        }
+    glPopMatrix();
+}
+
+void Scene::DrawSpaceportScene()
+{
+	// Draw Full screen bg
+	glDisable(GL_DEPTH_TEST);
+	gdl::InitOrthoProjection();
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    spacebg->Draw2DAbsolute(-1, -1, gdl::GetScreenWidth()+1, gdl::GetScreenHeight()+1);
+
+    glEnable(GL_DEPTH_TEST);
+    // Draw ship
+    gdl::InitPerspectiveProjection(75.0f, 0.1f, 1000.0f);
+
+    camera->LookAt();
+
+    glPushMatrix();
+
+        shipScene->Draw();
+
+    glPopMatrix();
+
+    glDisable(GL_DEPTH_TEST);
+}
+
+
+
 void Scene::SaveTracks()
 {
     gdl::RocketSync::SaveAllTracks();
@@ -334,18 +463,24 @@ void Scene::DrawFadeOut()
 		float W = gdl::GetScreenWidth();
 		float H = gdl::GetScreenHeight();
 
+        glDisable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         glColor4f(0.0f, 0.0f, 0.0f, fade);
 		glBegin(GL_QUADS);
-			glVertex3f(-W, H, -0.9999f);
-			glVertex3f(-W, -H, -0.9999f);
-			glVertex3f(W, -H, -0.9999f);
-			glVertex3f(W, H, -0.9999f);
+			glVertex2f(0, 0);
+			glVertex2f(W, 0);
+			glVertex2f(W, H);
+			glVertex2f(0, H);
 		glEnd();
 		glDisable(GL_BLEND);
 	}
+}
+
+void Scene::DebugDrawTiming()
+{
+    debugFont->Printf(gdl::Colors::White, 0, debugFont->GetCharacterHeight()*2, debugFont->GetCharacterHeight(), gdl::LJustify, gdl::LJustify, "Elapsed %.1f", spaceMusic->GetElapsedSeconds());
 }
 void Scene::DebugDraw3DSpace(float sideLength)
 {
