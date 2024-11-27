@@ -3,13 +3,14 @@
 #include <stdio.h>
 #include <string>
 
-gdl::Mesh* TerrainGenerator::GenerateFromPNG ( float unitsPerPixel, float heightMultiplier, gdl::PNGFile* png )
-{
-	// The width and height are in pixels
-	int depth = png->GetWidth();
-	int width = png->GetHeight();
+static const size_t X = 0;
+static const size_t Y = 1;
+static const size_t Z = 2;
 
-	gdl::Mesh* mesh = new gdl::Mesh();
+TerrainMesh* TerrainGenerator::CreateGridMesh ( float width, float depth, float uvRange )
+{
+
+	TerrainMesh* mesh = new TerrainMesh();
 	mesh->name = std::string("Terrain");
 
 	{ // Allocate
@@ -17,12 +18,14 @@ gdl::Mesh* TerrainGenerator::GenerateFromPNG ( float unitsPerPixel, float height
 		mesh->positions = 	new GLfloat[mesh->vertexCount * 3];
 		mesh->normals = 	new GLfloat[mesh->vertexCount * 3];
 		mesh->uvs = 		new GLfloat[mesh->vertexCount * 2];
+		mesh->vertexColors= new GLfloat[mesh->vertexCount * 3];
 
 		// Clear memory to zeros
 		for(size_t i = 0; i < mesh->vertexCount * 3; i++)
 		{
 			mesh->positions[i] = 0.0f;
 			mesh->normals[i] = 0.0f;
+			mesh->vertexColors[i] = 1.0f;
 		}
 		for(size_t i = 0; i < mesh->vertexCount * 2; i++)
 		{
@@ -41,16 +44,11 @@ gdl::Mesh* TerrainGenerator::GenerateFromPNG ( float unitsPerPixel, float height
 
 		// Start here
 		float sx = -0.5f - (float)(width/2) * 0.5f;
-		sx *= unitsPerPixel;
 		float sz = -0.5f - (float)(depth/2) * 0.5f;
-		sz *= unitsPerPixel;
 
 		size_t positionIndex = 0;
-		const size_t x = 0;
-		const size_t y = 1;
-		const size_t z = 2;
-		const float uStep = 1.0f/(float)(width);
-		const float vStep = 1.0f/(float)(depth);
+		const float uStep = uvRange/(float)(width);
+		const float vStep = uvRange/(float)(depth);
 		for (int d = 0; d < depth; d++)
 		{
 			for (int w = 0; w < width; w++)
@@ -59,23 +57,20 @@ gdl::Mesh* TerrainGenerator::GenerateFromPNG ( float unitsPerPixel, float height
 				size_t vertexi = i * 3;
 				size_t uvi = i * 2;
 				// DEBUG
-				float px = sx + (w * unitsPerPixel);
-				float py = png->GetGrayscale(w, d) * heightMultiplier;
-				float pz = sz + (d * unitsPerPixel);
-				// printf("P %zu (%.1f, %.1f, %.1f)\n", positionIndex, px, py, pz);
-				// printf("P %zu (%d, %d, %d)\n", positionIndex, vertexi+x, vertexi+y, vertexi+z);
+				float px = sx + w;
+				float py = 0.0f;
+				float pz = sz + d;
 
-				mesh->positions[vertexi + x] = px;
-				mesh->positions[vertexi + y] = py;
-				mesh->positions[vertexi + z] = pz;
-				// printf("P %zu (%.1f, %.1f, %.1f)\n", positionIndex, mesh->positions[vertexi+x], mesh->positions[vertexi+y], mesh->positions[vertexi+z] );
+				mesh->positions[vertexi + X] = px;
+				mesh->positions[vertexi + Y] = py;
+				mesh->positions[vertexi + Z] = pz;
 
-				mesh->normals[vertexi + x] = 0.0f;
-				mesh->normals[vertexi + y] = 1.0f;
-				mesh->normals[vertexi + z] = 0.0f;
+				mesh->normals[vertexi + X] = 0.0f;
+				mesh->normals[vertexi + Y] = 1.0f;
+				mesh->normals[vertexi + Z] = 0.0f;
 
-				mesh->uvs[uvi + x] = uStep * (float)w;
-				mesh->uvs[uvi + y] = vStep * (float)d;
+				mesh->uvs[uvi + X] = uStep * (float)w;
+				mesh->uvs[uvi + Y] = vStep * (float)d;
 
 				positionIndex++;
 			}
@@ -107,7 +102,11 @@ gdl::Mesh* TerrainGenerator::GenerateFromPNG ( float unitsPerPixel, float height
 			}
 		}
 	}
+	return mesh;
+}
 
+TerrainMesh* TerrainGenerator::CreateNormals ( TerrainMesh* mesh, float width, float depth )
+{
 	// Generate normals
 	// Go through all triangles
 	// Calculate a normal for the
@@ -242,7 +241,92 @@ gdl::Mesh* TerrainGenerator::GenerateFromPNG ( float unitsPerPixel, float height
 	}
 
 	delete[] triangleNormals;
+	return mesh;
+}
+
+TerrainMesh* TerrainGenerator::SetHeightsFromPNG ( TerrainMesh* mesh, gdl::PNGFile* png, float heightMultiplier, float width, float depth )
+{
+	for (int d = 0; d < depth; d++)
+	{
+		for (int w = 0; w < width; w++)
+		{
+			size_t i = (d * width + w);
+			size_t vertexi = i * 3;
+			mesh->positions[vertexi + Y] = png->GetGrayscale(w, d) * heightMultiplier;
+		}
+	}
+	return mesh;
+}
+
+
+
+TerrainMesh* TerrainGenerator::GenerateFromPNG (float heightMultiplier, float uvRange, gdl::PNGFile* png )
+{
+	// The width and height are in pixels
+	int depth = png->GetWidth();
+	int width = png->GetHeight();
+
+
+
+	TerrainMesh* mesh = CreateGridMesh(width, depth, uvRange);
+	mesh = SetHeightsFromPNG(mesh, png, heightMultiplier, width, depth);
+	mesh = CreateNormals(mesh, width, depth);
 
 	return mesh;
 }
+
+TerrainMesh* TerrainGenerator::CalculateMatcapFromNormals( TerrainMesh* mesh)
+{
+	for(size_t i = 0; i < mesh->vertexCount; i++)
+	{
+		size_t vertexIndex = i * 3;
+		glm::vec3 normal = glm::vec3(mesh->normals[vertexIndex + X], mesh->normals[vertexIndex + Y] , mesh->normals[vertexIndex + Z]);
+		//normal = glm::normalize(normal);
+		float u = (normal.x + 1.0f) * 0.5f;
+		float v = (normal.y + 1.0f) * 0.5f;
+
+		// size_t uvIndex = i * 2;
+		// mesh->uvs[uvIndex + X] = u;
+		// mesh->uvs[uvIndex + Y] = v;
+		mesh->vertexColors[vertexIndex + X] = u;
+		mesh->vertexColors[vertexIndex + Y] = v;
+		mesh->vertexColors[vertexIndex + Z] = 0;
+	}
+	return mesh;
+}
+
+TerrainMesh* TerrainGenerator::CalculateMatcapFromCamera ( TerrainMesh* mesh, gdl::vec3 cameraDirection )
+{
+	glm::vec3 camDir = glm::vec3(cameraDirection.x, cameraDirection.y, cameraDirection.z);
+	for(size_t i = 0; i < mesh->vertexCount; i++)
+	{
+		size_t vertexIndex = i * 3;
+		glm::vec3 normal = glm::vec3(mesh->normals[vertexIndex + X],
+								mesh->normals[vertexIndex + Y] ,
+								mesh->normals[vertexIndex + Z]);
+
+		glm::vec3 pos = glm::vec3(mesh->positions[vertexIndex + X],
+							mesh->positions[vertexIndex + Y],
+							mesh->positions[vertexIndex + Z]);
+
+		glm::vec3 vertex_to_camera = camDir -  pos;
+
+		vertex_to_camera = vertex_to_camera * (1.0f/ glm::length(vertex_to_camera));
+
+		float dot = 2.0f * glm::dot(normal, vertex_to_camera);
+		glm::vec3 reflection  = (normal * dot) - vertex_to_camera;
+
+		float u = (0.5f) * 0.5f * reflection.x;
+		float v = (0.5f) * 0.5f * reflection.y;
+
+		// size_t uvIndex = i * 2;
+		// mesh->uvs[uvIndex + X] = u;
+		//mesh->uvs[uvIndex + Y] = v;
+		mesh->vertexColors[vertexIndex + X] = u;
+		mesh->vertexColors[vertexIndex + Y] = v;
+		mesh->vertexColors[vertexIndex + Z] = 0;
+	}
+	return mesh;
+}
+
 

@@ -15,6 +15,7 @@ Is too big for github as a wav: [Get it from here](https://drive.google.com/file
 - [Dot font](https://www.1001fonts.com/led-counter-7-font.html)
 - [Spaceship reference from Gundam Wing](https://imgur.com/a/9OB9rev)
 - [Reference for camera shake](https://www.youtube.com/watch?v=Qedlb82Ru6w)
+- [Earth image from NASA](https://images.nasa.gov/details/PIA00122)
 
 
 ### Development environment
@@ -37,6 +38,7 @@ This controls what is rendered and what the camera targets.
 
 **camera**
 - x, y, and z are offsets to the target.
+- posX, posY and posZ are the camera's position if orbitOn is 0
 - orbitOn:  0: camera stays still. 1: Camera keeps distance to the target
 - orbitX and orbitY: Angle around target on X and Y axiis, in degrees
 - speed: How fast camera moves to new position.

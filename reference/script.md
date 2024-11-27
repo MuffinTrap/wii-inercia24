@@ -121,6 +121,9 @@ CONSTRUCTION"
 TERRAFORMING 
 SERVICES"
 
+"CALL TURUMORE
+ASMR FOR SLEEP"
+
 Camera follows ship until it reaches the elevator to runway.
 Ship turns 180 degrees to the right.
 

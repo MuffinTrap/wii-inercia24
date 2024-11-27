@@ -59,6 +59,11 @@ double sync_get_val_ref(const struct sync_track &t, double row) {
 double sync_get_val_ptr(const struct sync_track *t, double row) {
     int idx, irow;
 
+    if (t == nullptr)
+    {
+        return 0.0f;
+    }
+
     /* If we have no keys at all, return a constant 0 */
     if (!t->num_keys)
     {

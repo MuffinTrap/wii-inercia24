@@ -25,7 +25,6 @@ void Camera::Orbit ( float aroundY, float aroundX, float distance )
 	}
 
 	glm::mat4 orbit = glm::mat4(1.0f);
-	// glm::vec4 toTarget = glm::vec4(-target.x, -target.y, -target.z, 1.0f);
 	glm::vec4 toTarget = glm::vec4(0.0f, 0.0f, -distance, 1.0f);
 
 	// Rotate around the origo
@@ -34,13 +33,28 @@ void Camera::Orbit ( float aroundY, float aroundX, float distance )
 	glm::vec4 pos = orbit * toTarget;
 
 	position = gdl::vec3(target.x + pos.x, target.y + pos.y, target.z + pos.z);
-	// position = gdl::vec3(pos.x, pos.y, pos.z);
 }
 
 void Camera::LookAt()
 {
 	gdl::InitCamera(currentPosition, target, up);
 }
+
+gdl::vec3 Camera::GetDirection()
+{
+	gdl::vec3 dir = gdl::vec3(
+		target.x-currentPosition.x,
+		target.y-currentPosition.y,
+		target.z-currentPosition.z);
+
+	float len = sqrtf(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
+	if (len > 0.0f)
+	{
+		return gdl::vec3(dir.x / len, dir.y / len, dir.z / len);
+	}
+	return dir;
+}
+
 
 void Camera::Update(float delta, bool doInterpolate, float wiggleSpeed)
 {
@@ -68,4 +82,8 @@ void Camera::DebugDraw (short x, short y, gdl::Font* font )
 	font->Printf(gdl::Colors::White,
 				 x, y - 16, 16.0f, gdl::LJustify, gdl::LJustify,
 			  "TARGET %.2f %.1f, %.1f", target.x, target.y, target.z);
+	gdl::vec3 dir = GetDirection();
+	font->Printf(gdl::Colors::White,
+				 x, y - 32, 16.0f, gdl::LJustify, gdl::LJustify,
+			  "DIR %.2f %.1f, %.1f", dir.x, dir.y, dir.z);
 }

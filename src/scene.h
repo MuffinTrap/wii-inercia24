@@ -26,15 +26,27 @@ public:
 	// Scene drawing functions
 	void DrawDeparturesScene();
 	void DrawSpaceportScene();
+	void DrawEarthScene();
 
 	void DebugDraw3DSpace(float sideLength);
 	void DebugDrawTiming();
 
+	void DrawTerrainNode(gdl::Node* node);
+	void DrawBG(gdl::Image* bgImage, float scale);
+
 	gdl::Scene* shipScene = nullptr;
+	gdl::Scene* spaceportScene = nullptr;
+	gdl::Scene* gateScene = nullptr;
+
 	gdl::Image* shipTexture = nullptr;
 	gdl::Image* portTexture = nullptr;
 	gdl::Image* spacebg = nullptr;
+	gdl::Image* earthbg = nullptr;
+
 	gdl::Image* heightMap = nullptr;
+	gdl::Image* moonsurface = nullptr;
+	gdl::Image* matcap = nullptr;
+
 	gdl::Mesh* terrain = nullptr;
 	gdl::Font* debugFont = nullptr;
 	gdl::Sound* spaceMusic = nullptr;
