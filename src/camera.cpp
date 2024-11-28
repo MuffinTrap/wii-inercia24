@@ -3,6 +3,27 @@
 #include <mgdl.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "../rocket/mgdl-rocket.h"
+#include "../tracks.h"
+#include "drawscene.h"
+
+#ifndef SYNC_PLAYER
+static ROCKET_TRACK camera_x;
+static ROCKET_TRACK camera_y;
+static ROCKET_TRACK camera_z;
+static ROCKET_TRACK camera_orbit_on;
+static ROCKET_TRACK camera_orbit_x;
+static ROCKET_TRACK camera_orbit_y;
+static ROCKET_TRACK camera_orbit_dist;
+static ROCKET_TRACK camera_speed;
+static ROCKET_TRACK camera_interpolateOn;
+static ROCKET_TRACK camera_wiggle;
+static ROCKET_TRACK camera_fov;
+static ROCKET_TRACK camera_posX;
+static ROCKET_TRACK camera_posY;
+static ROCKET_TRACK camera_posZ;
+static ROCKET_TRACK camera_viewDistance;
+#endif
 
 Camera::Camera()
 {
@@ -10,6 +31,25 @@ Camera::Camera()
 	currentPosition = position;
 	target = gdl::vec3(0.0f, 0.0f, 0.0f);
 	up = gdl::vec3(0.0f, 1.0f, 0.0f);
+
+#ifndef SYNC_PLAYER
+	camera_x = gdl::RocketSync::GetTrack("camera:x");
+	camera_y = gdl::RocketSync::GetTrack("camera:y");
+	camera_z = gdl::RocketSync::GetTrack("camera:z");
+	camera_orbit_on = gdl::RocketSync::GetTrack("camera:orbitON");
+	camera_orbit_x = gdl::RocketSync::GetTrack("camera:orbitX");
+	camera_orbit_y = gdl::RocketSync::GetTrack("camera:orbitY");
+	camera_orbit_dist = gdl::RocketSync::GetTrack("camera:orbitDistance");
+	camera_speed = gdl::RocketSync::GetTrack("camera:speed");
+	camera_interpolateOn = gdl::RocketSync::GetTrack("camera:interpolateOn");
+	camera_wiggle = gdl::RocketSync::GetTrack("camera:wiggle");
+	camera_fov = gdl::RocketSync::GetTrack("camera:fov");
+	camera_posX = gdl::RocketSync::GetTrack("camera:posX");
+	camera_posY = gdl::RocketSync::GetTrack("camera:posY");
+	camera_posZ = gdl::RocketSync::GetTrack("camera:posZ");
+	camera_viewDistance = gdl::RocketSync::GetTrack("camera:viewDistance");
+#endif
+
 }
 
 
@@ -35,7 +75,7 @@ void Camera::Orbit ( float aroundY, float aroundX, float distance )
 	position = gdl::vec3(target.x + pos.x, target.y + pos.y, target.z + pos.z);
 }
 
-void Camera::LookAt()
+void Camera::LookAtTarget()
 {
 	gdl::InitCamera(currentPosition, target, up);
 }
@@ -55,9 +95,40 @@ gdl::vec3 Camera::GetDirection()
 	return dir;
 }
 
-
-void Camera::Update(float delta, bool doInterpolate, float wiggleSpeed)
+void Camera::SetupFor3D()
 {
+    gdl::InitPerspectiveProjection(75.0f + gdl::RocketSync::GetFloat(camera_fov), 1.0f, gdl::RocketSync::GetFloat(camera_viewDistance));
+}
+
+
+void Camera::Update(float delta, gdl::vec3 target)
+{
+	this->target = target;
+
+	// Offsets to the target
+	this->target.x += gdl::RocketSync::GetFloat(camera_x);
+	this->target.y += gdl::RocketSync::GetFloat(camera_y);
+	this->target.z += gdl::RocketSync::GetFloat(camera_z);
+
+    if (gdl::RocketSync::GetBool(camera_orbit_on))
+    {
+        Orbit(gdl::RocketSync::GetFloat(camera_orbit_y),
+                      gdl::RocketSync::GetFloat(camera_orbit_x),
+                      gdl::RocketSync::GetFloat(camera_orbit_dist));
+    }
+    else
+    {
+        // Set position directly when not orbiting
+        position.x = gdl::RocketSync::GetFloat(camera_posX);
+        position.y = gdl::RocketSync::GetFloat(camera_posY);
+        position.z = gdl::RocketSync::GetFloat(camera_posZ);
+    }
+
+    bool doInterpolate = gdl::RocketSync::GetBool(camera_interpolateOn);
+    float wiggle = gdl::RocketSync::GetFloat(camera_wiggle);
+    float speed = gdl::RocketSync::GetFloat(camera_speed);
+    lerpSpeed = speed;
+
 	if (doInterpolate)
 	{
 		// Move towards position

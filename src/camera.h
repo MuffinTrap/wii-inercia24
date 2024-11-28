@@ -12,9 +12,11 @@ public:
 	float lerpSpeed;
 
 	Camera();
-	void Update(float delta, bool doInterpolate, float wiggleSpeed);
+
+	void SetupFor3D();
+	void Update(float delta, gdl::vec3 target);
 	void Orbit(float aroundY, float aroundX, float distance);
-	void LookAt();
+	void LookAtTarget();
 	void DebugDraw(short x, short y, gdl::Font* font);
 	gdl::vec3 GetDirection();
 

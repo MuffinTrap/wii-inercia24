@@ -2,15 +2,9 @@
 
 #include <mgdl.h>
 #include "camera.h"
+#include "drawscene.h"
+#include "departures.h"
 
-enum DrawScene : int
-{
-	Spaceport = 0,
-	Departures  = 1,
-	Terrain = 2,
-	Earth = 3,
-	Gate = 4
-};
 
 class Scene
 {
@@ -24,7 +18,6 @@ public:
 	bool ShouldQuit();
 
 	// Scene drawing functions
-	void DrawDeparturesScene();
 	void DrawSpaceportScene();
 	void DrawEarthScene();
 
@@ -32,16 +25,22 @@ public:
 	void DebugDrawTiming();
 
 	void DrawTerrainNode(gdl::Node* node);
-	void DrawBG(gdl::Image* bgImage, float scale);
+	void DrawBG(gdl::Image* bgImage, float xoffset, float yoffset, float scale);
 
+	// Scenes
+	DeparturesScene* departures;
+
+	// FBX files
 	gdl::Scene* shipScene = nullptr;
 	gdl::Scene* spaceportScene = nullptr;
 	gdl::Scene* gateScene = nullptr;
 
 	gdl::Image* shipTexture = nullptr;
 	gdl::Image* portTexture = nullptr;
+	gdl::Image* gateTexture = nullptr;
 	gdl::Image* spacebg = nullptr;
 	gdl::Image* earthbg = nullptr;
+	gdl::Image* moonfg = nullptr;
 
 	gdl::Image* heightMap = nullptr;
 	gdl::Image* moonsurface = nullptr;
@@ -50,7 +49,6 @@ public:
 	gdl::Mesh* terrain = nullptr;
 	gdl::Font* debugFont = nullptr;
 	gdl::Sound* spaceMusic = nullptr;
-	gdl::Font* dotFont = nullptr;
 	Camera* camera = nullptr;
 
 	gdl::Node* shipNode = nullptr;
@@ -60,6 +58,10 @@ public:
 	gdl::Node* elevatorDoorRight = nullptr;
 	gdl::Node* elevatorPlatform = nullptr;
 	gdl::Node* terrainNode = nullptr;
+
+	gdl::Node* gateRingNode = nullptr;
+
+	gdl::PNGFile* heightMapPNG;
 
 	gdl::MenuCreator DebugMenu;
 

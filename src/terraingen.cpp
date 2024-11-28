@@ -246,6 +246,7 @@ TerrainMesh* TerrainGenerator::CreateNormals ( TerrainMesh* mesh, float width, f
 
 TerrainMesh* TerrainGenerator::SetHeightsFromPNG ( TerrainMesh* mesh, gdl::PNGFile* png, float heightMultiplier, float width, float depth )
 {
+	printf("Set heights from PNG : Multiplier %.1f, w: %.1f, d: %.1f\n", heightMultiplier, width, depth);
 	for (int d = 0; d < depth; d++)
 	{
 		for (int w = 0; w < width; w++)
@@ -253,6 +254,25 @@ TerrainMesh* TerrainGenerator::SetHeightsFromPNG ( TerrainMesh* mesh, gdl::PNGFi
 			size_t i = (d * width + w);
 			size_t vertexi = i * 3;
 			mesh->positions[vertexi + Y] = png->GetGrayscale(w, d) * heightMultiplier;
+		}
+	}
+	return mesh;
+}
+
+
+TerrainMesh * TerrainGenerator::CreateUVs ( TerrainMesh* mesh, float range, float width, float depth )
+{
+	printf("Create uvs: Range %.1f, w: %.1f, d: %.1f\n", range, width, depth);
+	const float uStep = range/(float)(width);
+	const float vStep = range/(float)(depth);
+	for (int d = 0; d < depth; d++)
+	{
+		for (int w = 0; w < width; w++)
+		{
+			size_t i = (d * width + w);
+			size_t uvi = i * 2;
+			mesh->uvs[uvi + X] = uStep * (float)w;
+			mesh->uvs[uvi + Y] = vStep * (float)d;
 		}
 	}
 	return mesh;
