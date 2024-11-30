@@ -259,7 +259,7 @@ TerrainMesh* TerrainGenerator::SetHeightsFromPNG ( TerrainMesh* mesh, gdl::PNGFi
 	return mesh;
 }
 
-
+// TODO: Add parameter for mirrored repeat
 TerrainMesh * TerrainGenerator::CreateUVs ( TerrainMesh* mesh, float range, float width, float depth )
 {
 	printf("Create uvs: Range %.1f, w: %.1f, d: %.1f\n", range, width, depth);

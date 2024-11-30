@@ -107,8 +107,8 @@ void Scene::Init()
     moonsurface = gdl::LoadImage("assets/moonsurface.png", gdl::TextureFilterModes::Linear);
     // Setup mirroring on the surface
     glBindTexture(GL_TEXTURE_2D, moonsurface->GetTextureId());
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // NOTE No MIRRORED_REPEAT on WINDOWS
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     matcap = gdl::LoadImage("assets/shinyorb.png", gdl::TextureFilterModes::Linear);
