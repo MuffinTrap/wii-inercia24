@@ -534,5 +534,7 @@
 			<key interpolation="0" value="70" row="1242"/>
 		</track>
 	</tracks>
-	<bookmarks/>
+	<bookmarks>
+		<bookmark row="37"/>
+	</bookmarks>
 </sync>

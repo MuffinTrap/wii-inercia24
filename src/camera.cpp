@@ -4,17 +4,17 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "../rocket/mgdl-rocket.h"
-#include "../tracks.h"
+#include "../rocket_tracks.h"
 #include "drawscene.h"
 
 #ifndef SYNC_PLAYER
 static ROCKET_TRACK camera_x;
 static ROCKET_TRACK camera_y;
 static ROCKET_TRACK camera_z;
-static ROCKET_TRACK camera_orbit_on;
-static ROCKET_TRACK camera_orbit_x;
-static ROCKET_TRACK camera_orbit_y;
-static ROCKET_TRACK camera_orbit_dist;
+static ROCKET_TRACK camera_orbitON;
+static ROCKET_TRACK camera_orbitX;
+static ROCKET_TRACK camera_orbitY;
+static ROCKET_TRACK camera_orbitDistance;
 static ROCKET_TRACK camera_speed;
 static ROCKET_TRACK camera_interpolateOn;
 static ROCKET_TRACK camera_wiggle;
@@ -37,10 +37,10 @@ Camera::Camera()
 	camera_x = gdl::RocketSync::GetTrack("camera:x");
 	camera_y = gdl::RocketSync::GetTrack("camera:y");
 	camera_z = gdl::RocketSync::GetTrack("camera:z");
-	camera_orbit_on = gdl::RocketSync::GetTrack("camera:orbitON");
-	camera_orbit_x = gdl::RocketSync::GetTrack("camera:orbitX");
-	camera_orbit_y = gdl::RocketSync::GetTrack("camera:orbitY");
-	camera_orbit_dist = gdl::RocketSync::GetTrack("camera:orbitDistance");
+	camera_orbitON = gdl::RocketSync::GetTrack("camera:orbitON");
+	camera_orbitX = gdl::RocketSync::GetTrack("camera:orbitX");
+	camera_orbitY = gdl::RocketSync::GetTrack("camera:orbitY");
+	camera_orbitDistance = gdl::RocketSync::GetTrack("camera:orbitDistance");
 	camera_speed = gdl::RocketSync::GetTrack("camera:speed");
 	camera_interpolateOn = gdl::RocketSync::GetTrack("camera:interpolateOn");
 	camera_wiggle = gdl::RocketSync::GetTrack("camera:wiggle");
@@ -115,11 +115,11 @@ void Camera::Update(float delta, gdl::vec3 target)
 		this->target.z += gdl::RocketSync::GetFloat(camera_z);
 	}
 
-    if (gdl::RocketSync::GetBool(camera_orbit_on))
+    if (gdl::RocketSync::GetBool(camera_orbitON))
     {
-        Orbit(gdl::RocketSync::GetFloat(camera_orbit_y),
-                      gdl::RocketSync::GetFloat(camera_orbit_x),
-                      gdl::RocketSync::GetFloat(camera_orbit_dist));
+        Orbit(gdl::RocketSync::GetFloat(camera_orbitY),
+                      gdl::RocketSync::GetFloat(camera_orbitX),
+                      gdl::RocketSync::GetFloat(camera_orbitDistance));
     }
     else
     {
@@ -130,7 +130,8 @@ void Camera::Update(float delta, gdl::vec3 target)
     }
 
     bool doInterpolate = gdl::RocketSync::GetBool(camera_interpolateOn);
-    float wiggle = gdl::RocketSync::GetFloat(camera_wiggle);
+	// TODO: Implement shaky shaky
+    // float wiggle = gdl::RocketSync::GetFloat(camera_wiggle);
     float speed = gdl::RocketSync::GetFloat(camera_speed);
     lerpSpeed = speed;
 

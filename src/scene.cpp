@@ -8,7 +8,7 @@
 
 #ifndef SYNC_PLAYER
 
-    static ROCKET_TRACK sceneNumber;
+    static ROCKET_TRACK scene;
     static ROCKET_TRACK fade_out;
     static ROCKET_TRACK end_demo;
 
@@ -18,11 +18,11 @@
 
     // Ship hangar doors
     static ROCKET_TRACK door_hangar;
-    static ROCKET_TRACK door_hangar_x;
+    static ROCKET_TRACK door_hangarX;
 
     // Runway elevator doors
     static ROCKET_TRACK door_elevator;
-    static ROCKET_TRACK door_elevator_x;
+    static ROCKET_TRACK door_elevatorX;
 
     // Platform that moves the ship around
     static ROCKET_TRACK platform_x;
@@ -50,19 +50,17 @@
 
     // The normals need to be recalculated when this changes
     static ROCKET_TRACK terrain_heightMultiplier;
-    static float lastTerrainHeightMultiplier = 2.0f;
 
     static ROCKET_TRACK terrain_uvRange;
-    static float lastTerrainUVrange = 1.0f;
 
     // Earth scene
     static ROCKET_TRACK earth_x;
     static ROCKET_TRACK earth_y;
     static ROCKET_TRACK earth_scale;
-    static ROCKET_TRACK earth_moon_x;
-    static ROCKET_TRACK earth_moon_y;
-    static ROCKET_TRACK earth_moon_scale;
-    static ROCKET_TRACK earth_moon_illumination;
+    static ROCKET_TRACK earth_moonX;
+    static ROCKET_TRACK earth_moonY;
+    static ROCKET_TRACK earth_moonScale;
+    static ROCKET_TRACK earth_moonIllumination;
 
     // Gate scene
     static ROCKET_TRACK gate_x;
@@ -75,6 +73,8 @@
     static ROCKET_TRACK gate_ringRot;
 
 #endif
+    static float lastTerrainHeightMultiplier = 2.0f;
+    static float lastTerrainUVrange = 1.0f;
 
 void Scene::Init()
 {
@@ -196,7 +196,7 @@ void Scene::Init()
         departures = new DeparturesScene();
 #ifndef SYNC_PLAYER
 
-        sceneNumber = gdl::RocketSync::GetTrack("scene");
+        scene = gdl::RocketSync::GetTrack("scene");
         fade_out = gdl::RocketSync::GetTrack("fade_out");
         end_demo = gdl::RocketSync::GetTrack("end_demo");
 
@@ -208,11 +208,11 @@ void Scene::Init()
 
         // Doors to hangar
         door_hangar = gdl::RocketSync::GetTrack("door:hangar");
-        door_hangar_x = gdl::RocketSync::GetTrack("door:hangarX");
+        door_hangarX = gdl::RocketSync::GetTrack("door:hangarX");
 
         // Runway elevator doors
         door_elevator = gdl::RocketSync::GetTrack("door:elevator");
-        door_elevator_x = gdl::RocketSync::GetTrack("door:elevatorX");
+        door_elevatorX = gdl::RocketSync::GetTrack("door:elevatorX");
 
         // Platform that moves the ship around
         platform_x = gdl::RocketSync::GetTrack("platform:x");
@@ -243,10 +243,10 @@ void Scene::Init()
         earth_x = gdl::RocketSync::GetTrack("earth:x");
         earth_y = gdl::RocketSync::GetTrack("earth:y");
         earth_scale = gdl::RocketSync::GetTrack("earth:scale");
-        earth_moon_x = gdl::RocketSync::GetTrack("earth:moonX");
-        earth_moon_y = gdl::RocketSync::GetTrack("earth:moonY");
-        earth_moon_scale = gdl::RocketSync::GetTrack("earth:moonScale");
-        earth_moon_illumination = gdl::RocketSync::GetTrack("earth:moonIllumination");
+        earth_moonX = gdl::RocketSync::GetTrack("earth:moonX");
+        earth_moonY = gdl::RocketSync::GetTrack("earth:moonY");
+        earth_moonScale = gdl::RocketSync::GetTrack("earth:moonScale");
+        earth_moonIllumination = gdl::RocketSync::GetTrack("earth:moonIllumination");
 
 
         gate_x = gdl::RocketSync::GetTrack("gate:x");
@@ -314,9 +314,9 @@ void Scene::Update()
 
 
     float hangar_open = gdl::RocketSync::GetFloat( door_hangar );
-    float hangar_offset = gdl::RocketSync::GetFloat( door_hangar_x );
+    float hangar_offset = gdl::RocketSync::GetFloat( door_hangarX );
     float elevator_open = gdl::RocketSync::GetFloat(door_elevator);
-    float elevator_offset =gdl::RocketSync::GetFloat(door_elevator_x);
+    float elevator_offset =gdl::RocketSync::GetFloat(door_elevatorX);
 
     hangarDoorLeft->transform.position.x = hangar_open + hangar_offset;
     hangarDoorRight->transform.position.x = hangar_open * -1.0f + hangar_offset;
@@ -336,7 +336,7 @@ void Scene::Update()
         gdl::RocketSync::GetFloat(gate_rotZ));
     gateRoot->transform.SetScalef(gdl::RocketSync::GetFloat(gate_scale));
 
-    DrawScene activeScene = (DrawScene)gdl::RocketSync::GetInt(sceneNumber);
+    DrawScene activeScene = (DrawScene)gdl::RocketSync::GetInt(scene);
     if (activeScene == DrawScene::Gate)
     {
         gateRingNode->transform.rotationDegrees.y += gdl::RocketSync::GetFloat(gate_ringRot) * gdl::GetDeltaTime();
@@ -378,8 +378,8 @@ void Scene::Update()
 
 void Scene::Draw()
 {
-    DrawScene scene = (DrawScene)gdl::RocketSync::GetInt(sceneNumber);
-    switch(scene)
+    DrawScene activeScene = (DrawScene)gdl::RocketSync::GetInt(scene);
+    switch(activeScene)
     {
         case Spaceport:
             DrawSpaceportScene();
@@ -469,12 +469,12 @@ void Scene::DrawEarthScene()
            gdl::RocketSync::GetFloat(earth_y),
            gdl::RocketSync::GetFloat(earth_scale));
 
-    float mi = gdl::RocketSync::GetFloat(earth_moon_illumination);
+    float mi = gdl::RocketSync::GetFloat(earth_moonIllumination);
     moonfg->SetTint(mi, mi, mi);
     glEnable(GL_BLEND);
-    DrawBG(moonfg, gdl::RocketSync::GetFloat(earth_moon_x),
-           gdl::RocketSync::GetFloat(earth_moon_y),
-           gdl::RocketSync::GetFloat(earth_moon_scale));
+    DrawBG(moonfg, gdl::RocketSync::GetFloat(earth_moonX),
+           gdl::RocketSync::GetFloat(earth_moonY),
+           gdl::RocketSync::GetFloat(earth_moonScale));
     glDisable(GL_BLEND);
 
 
@@ -589,7 +589,6 @@ void Scene::DebugDrawTiming()
     int x = 0;
     int h = debugFont->GetCharacterHeight();
     int y = h;
-    int w = debugFont->GetCharacterWidth()* 14;
 
     short sw = gdl::GetScreenWidth();
     float progress = spaceMusic->GetElapsedSeconds() / (274.0f);
