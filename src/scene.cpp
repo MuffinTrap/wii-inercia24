@@ -4,6 +4,7 @@
 #include "../rocket/mgdl-rocket.h"
 #include "../tracks.h"
 #include <glm/gtc/matrix_transform.hpp>
+#include <mgdl/mgdl-draw2d.h>
 
 #ifndef SYNC_PLAYER
 
@@ -37,6 +38,7 @@
     static ROCKET_TRACK ship_rotY;
     static ROCKET_TRACK ship_rotZ;
     static ROCKET_TRACK ship_scale;
+    static ROCKET_TRACK ship_illumination;
 
     // Terrain
     static ROCKET_TRACK terrain_x;
@@ -226,6 +228,7 @@ void Scene::Init()
         ship_rotY = gdl::RocketSync::GetTrack("ship:rotY");
         ship_rotZ = gdl::RocketSync::GetTrack("ship:rotZ");
         ship_scale = gdl::RocketSync::GetTrack("ship:scale");
+        ship_illumination = gdl::RocketSync::GetTrack("ship:illumination");
 
 
         terrain_x = gdl::RocketSync::GetTrack("terrain:x");
@@ -332,13 +335,18 @@ void Scene::Update()
         gdl::RocketSync::GetFloat(gate_rotY),
         gdl::RocketSync::GetFloat(gate_rotZ));
     gateRoot->transform.SetScalef(gdl::RocketSync::GetFloat(gate_scale));
-    gateRingNode->transform.rotationDegrees.y = gdl::RocketSync::GetFloat(gate_ringRot);
+
+    DrawScene activeScene = (DrawScene)gdl::RocketSync::GetInt(sceneNumber);
+    if (activeScene == DrawScene::Gate)
+    {
+        gateRingNode->transform.rotationDegrees.y += gdl::RocketSync::GetFloat(gate_ringRot) * gdl::GetDeltaTime();
+    }
 
 
 
     // Camera update
     // NOTE: Update camera after updating target to avoid jitter
-    switch ((DrawScene)gdl::RocketSync::GetInt(sceneNumber))
+    switch (activeScene)
     {
         case Departures:
         camera->Update(gdl::GetDeltaTime(), gdl::vec3(0,0,0) );
@@ -406,6 +414,7 @@ void Scene::Draw()
     DrawFadeOut();
 
 #ifndef SYNC_PLAYER
+	glDisable(GL_DEPTH_TEST);
     {
         static bool showScene = false;
         if (DebugMenu.Button("Scenegraph"))
@@ -429,7 +438,18 @@ void Scene::Draw()
             camera->DebugDraw(gdl::GetScreenWidth()/2, gdl::GetScreenHeight()-gdl::GetScreenHeight()/2, debugFont);
         }
     }
-    DebugDrawTiming();
+    {
+        static bool debugTiming = false;
+        if (DebugMenu.Button("Timing"))
+        {
+            debugTiming = !debugTiming;
+        }
+        if (debugTiming)
+        {
+            DebugDrawTiming();
+        }
+    }
+	glEnable(GL_DEPTH_TEST);
 #endif
 }
 
@@ -463,6 +483,7 @@ void Scene::DrawEarthScene()
     camera->LookAtTarget();
     glPushMatrix();
         shipScene->Draw();
+        glColor3f(1.0f, 1.0f, 1.0f);
     glPopMatrix();
     // glDisable(GL_DEPTH_TEST);
 }
@@ -565,7 +586,26 @@ void Scene::DrawFadeOut()
 
 void Scene::DebugDrawTiming()
 {
-    debugFont->Printf(gdl::Colors::White, 0, debugFont->GetCharacterHeight()*2, debugFont->GetCharacterHeight(), gdl::LJustify, gdl::LJustify, "Elapsed %.1f", spaceMusic->GetElapsedSeconds());
+    int x = 0;
+    int h = debugFont->GetCharacterHeight();
+    int y = h;
+    int w = debugFont->GetCharacterWidth()* 14;
+
+    short sw = gdl::GetScreenWidth();
+    float progress = spaceMusic->GetElapsedSeconds() / (274.0f);
+    glColor3f(1.0f, 1.0f, 1.0f);
+    //gdl::DrawBoxF(x, y, sw, h, gdl::Colors::Black);
+    short p25 = x + sw/4;
+    short p50 = x + sw/2;
+    short p75 = x + +sw/2 + sw/4;
+    gdl::DrawBoxF(p25,         y,                 p25+2, y-h, gdl::Colors::White);
+    gdl::DrawBoxF(p50,         y,                 p50+2, y-h, gdl::Colors::White);
+    gdl::DrawBoxF(p75,  y,                 p75+2, y-h, gdl::Colors::White);
+
+    // Progress bar
+    gdl::DrawBoxF(x,                y-2, sw * progress, y-h+2, gdl::Colors::White);
+    debugFont->Printf(gdl::Colors::Green, x+4, y+h, debugFont->GetCharacterHeight(), gdl::LJustify, gdl::LJustify, "Elapsed %.1f", spaceMusic->GetElapsedSeconds());
+    glColor3f(1.0f, 1.0f, 1.0f);
 }
 void Scene::DebugDraw3DSpace(float sideLength)
 {

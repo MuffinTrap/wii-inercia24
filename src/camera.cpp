@@ -23,6 +23,7 @@ static ROCKET_TRACK camera_posX;
 static ROCKET_TRACK camera_posY;
 static ROCKET_TRACK camera_posZ;
 static ROCKET_TRACK camera_viewDistance;
+static ROCKET_TRACK camera_targetOn;
 #endif
 
 Camera::Camera()
@@ -48,6 +49,7 @@ Camera::Camera()
 	camera_posY = gdl::RocketSync::GetTrack("camera:posY");
 	camera_posZ = gdl::RocketSync::GetTrack("camera:posZ");
 	camera_viewDistance = gdl::RocketSync::GetTrack("camera:viewDistance");
+	camera_targetOn = gdl::RocketSync::GetTrack("camera:targetOn");
 #endif
 
 }
@@ -103,12 +105,15 @@ void Camera::SetupFor3D()
 
 void Camera::Update(float delta, gdl::vec3 target)
 {
-	this->target = target;
+	if (gdl::RocketSync::GetBool(camera_targetOn))
+	{
+		this->target = target;
 
-	// Offsets to the target
-	this->target.x += gdl::RocketSync::GetFloat(camera_x);
-	this->target.y += gdl::RocketSync::GetFloat(camera_y);
-	this->target.z += gdl::RocketSync::GetFloat(camera_z);
+		// Offsets to the target
+		this->target.x += gdl::RocketSync::GetFloat(camera_x);
+		this->target.y += gdl::RocketSync::GetFloat(camera_y);
+		this->target.z += gdl::RocketSync::GetFloat(camera_z);
+	}
 
     if (gdl::RocketSync::GetBool(camera_orbit_on))
     {
