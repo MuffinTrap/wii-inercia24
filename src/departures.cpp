@@ -36,7 +36,7 @@ DeparturesScene::DeparturesScene()
 #endif
 
     flights.push_back(CreateInfo("BEER SQUADRON", "BRUSSELS/TERRA", "A1", Future));
-    flights.push_back(CreateInfo("VIKING FLIGHT", "TURKU/TERRA", "A2", Future));
+    flights.push_back(CreateInfo("SILJA FLIGHT", "STOCKHOLM/TERRA", "A2", Future));
     flights.push_back(CreateInfo("LOVE PLANES", "BYTE ST./VENUS", "A3", Boarding));
     flights.push_back(CreateInfo("FINNAIR", "JYVAESKYLAE/TERRA", "B4", Future));
     flights.push_back(CreateInfo("BEES", "ZWOLLE/TERRA", "B5", Future));

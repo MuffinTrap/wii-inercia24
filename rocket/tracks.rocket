@@ -80,6 +80,7 @@
 			<key interpolation="2" value="2" row="0"/>
 			<key interpolation="2" value="2" row="10"/>
 			<key interpolation="3" value="3" row="29"/>
+			<key interpolation="0" value="2" row="30"/>
 			<key interpolation="2" value="2.6000004" row="33"/>
 			<key interpolation="2" value="0.49999997" row="55"/>
 			<key interpolation="2" value="0" row="64"/>
@@ -303,7 +304,7 @@
 		</track>
 		<track name="camera:fov">
 			<key interpolation="1" value="0" row="16"/>
-			<key interpolation="0" value="-41" row="32"/>
+			<key interpolation="0" value="-23" row="32"/>
 			<key interpolation="0" value="0" row="80"/>
 			<key interpolation="0" value="0" row="232"/>
 			<key interpolation="1" value="0" row="1120"/>
@@ -444,7 +445,7 @@
 			<key interpolation="0" value="-5.0999999" row="0"/>
 		</track>
 		<track name="departure:textY">
-			<key interpolation="0" value="0.5" row="0"/>
+			<key interpolation="0" value="0.80000007" row="0"/>
 		</track>
 		<track name="departure:textScale">
 			<key interpolation="0" value="-0.79999995" row="0"/>
@@ -453,7 +454,7 @@
 			<key interpolation="0" value="11.300001" row="0"/>
 		</track>
 		<track name="departure:height">
-			<key interpolation="0" value="2" row="0"/>
+			<key interpolation="0" value="3" row="0"/>
 		</track>
 		<track name="departure:depth">
 			<key interpolation="0" value="0.1" row="0"/>
@@ -564,15 +565,17 @@
 			<key interpolation="0" value="1" row="336"/>
 			<key interpolation="0" value="2" row="352"/>
 			<key interpolation="0" value="3" row="368"/>
-			<key interpolation="0" value="0" row="384"/>
-			<key interpolation="0" value="1" row="400"/>
-			<key interpolation="0" value="2" row="416"/>
-			<key interpolation="0" value="3" row="432"/>
-			<key interpolation="0" value="0" row="448"/>
-			<key interpolation="0" value="1" row="464"/>
-			<key interpolation="0" value="2" row="480"/>
-			<key interpolation="0" value="3" row="496"/>
-			<key interpolation="0" value="0" row="512"/>
+			<key interpolation="0" value="4" row="384"/>
+			<key interpolation="0" value="0" row="400"/>
+			<key interpolation="0" value="1" row="416"/>
+			<key interpolation="0" value="2" row="432"/>
+			<key interpolation="0" value="3" row="448"/>
+			<key interpolation="0" value="4" row="464"/>
+			<key interpolation="0" value="0" row="480"/>
+			<key interpolation="0" value="1" row="496"/>
+			<key interpolation="0" value="2" row="512"/>
+			<key interpolation="0" value="3" row="528"/>
+			<key interpolation="0" value="4" row="544"/>
 		</track>
 	</tracks>
 	<bookmarks>
