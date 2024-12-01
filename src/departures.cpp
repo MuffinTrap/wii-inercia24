@@ -1,4 +1,5 @@
 #include "departures.h"
+#include "draw3d.h"
 #include <mgdl.h>
 #include "../rocket/mgdl-rocket.h"
 
@@ -20,7 +21,7 @@
 DeparturesScene::DeparturesScene()
 {
     // dotFont = gdl::LoadFontCustom("assets/dot_font.png", 44,64, '1', 10);
-    dotFont = gdl::LoadFontCustom("assets/led_counter50x64_v2.png", 50,64, 10, " -./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    dotFont = gdl::LoadFontCustom("assets/led_counter50x64_v2.png", 25,32, 10, " -./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
     gdl_assert_print(dotFont != nullptr, "Dot font failed to load");
 #ifndef SYNC_PLAYER
         // Departures board
@@ -45,60 +46,6 @@ static float Display(gdl::Font* font, float x, float y, u32 color, float scale, 
     return scale * text.length();
 }
 
-static void Quad(glm::vec3& a, const glm::vec3& b, const glm::vec3& c, const glm::vec3& d, const::glm::vec3& normal)
-{
-	// bottom
-	glNormal3f(normal.x, normal.y, normal.z);
-	glVertex3f(a.x, a.y, a.z);
-
-	// top 1 and 2
-	glNormal3f(normal.x, normal.y, normal.z);
-	glVertex3f(b.x, b.y, b.z);
-	glNormal3f(normal.x, normal.y, normal.z);
-	glVertex3f(c.x, c.y, c.z);
-
-	// bottom2
-	glNormal3f(normal.x, normal.y, normal.z);
-	glVertex3f(d.x, d.y, d.z);
-}
-
-static void SolidCube(float size)
-{
-    float hs = size/2.0f;
-	glm::vec3 bl = {-hs, -hs, -hs};
-	glm::vec3 br = {hs, -hs, -hs};
-	glm::vec3 fl = {-hs, -hs, hs};
-	glm::vec3 fr = {hs, -hs, hs};
-
-	glm::vec3 tbl = {-hs, hs, -hs};
-	glm::vec3 tbr = {hs, hs, -hs};
-	glm::vec3 tfl = {-hs, hs, hs};
-	glm::vec3 tfr = {hs, hs, hs};
-
-	glm::vec3 R = {1.0f, 0.0f, 0.0f};
-	glm::vec3 U = {0.0f, 1.0f, 0.0f};
-	glm::vec3 F = {0.0f, 0.0f, 0.0001f};
-
-	glm::vec3 nR = R;
-	glm::vec3 nL = -R;
-	glm::vec3 nF =  {0.0f, 0.0f, 1.0f};
-	glm::vec3 nB =  -F;
-
-	glBegin(GL_QUADS);
-		// left side
-		Quad(bl, tbl, tfl, fl, nL);
-		// front
-		Quad(fl, tfl, tfr, fr, nF);
-		// right
-		Quad(fr, tfr, tbr, br, nR);
-		// back
-		Quad(br, tbr, tbl, bl, nB);
-
-		// top
-		Quad(tfl, tbl, tbr, tfr, U);
-
-	glEnd();
-}
 
 void DeparturesScene::Draw(Camera* camera)
 {

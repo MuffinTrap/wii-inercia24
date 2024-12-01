@@ -56,6 +56,11 @@ void gdl::RocketSync::SetRow(int row)
     instance->music->SetElapsedSeconds(elapsed);
 }
 
+void gdl::RocketSync::SetSeconds(float seconds)
+{
+    instance->music->SetElapsedSeconds(seconds);
+}
+
 int RocketIsPlaying()
 {
     // Get the play state of the audio source

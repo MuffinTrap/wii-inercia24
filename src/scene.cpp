@@ -1,10 +1,12 @@
 
 #include "scene.h"
 #include "terraingen.h"
+#include "draw3d.h"
 #include "../rocket/mgdl-rocket.h"
 #include "../tracks.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <mgdl/mgdl-draw2d.h>
+#include <mgdl/mgdl-util.h>
 
 #ifndef SYNC_PLAYER
 
@@ -72,9 +74,21 @@
     static ROCKET_TRACK gate_rotZ;
     static ROCKET_TRACK gate_ringRot;
 
+    // Credits in the tunnel
+    static ROCKET_TRACK credit_x;
+    static ROCKET_TRACK credit_y;
+    static ROCKET_TRACK credit_z;
+    static ROCKET_TRACK credit_rotY;
+    static ROCKET_TRACK credit_size;
+    static ROCKET_TRACK credit_textSize;
+    static ROCKET_TRACK credit_textX;
+    static ROCKET_TRACK credit_textY;
+    static ROCKET_TRACK credit_between;
+    static ROCKET_TRACK credit_index;
+
 #endif
-    static float lastTerrainHeightMultiplier = 2.0f;
-    static float lastTerrainUVrange = 1.0f;
+    static float lastTerrainHeightMultiplier = 4.0f;
+    static float lastTerrainUVrange = 8.0f;
 
 void Scene::Init()
 {
@@ -83,6 +97,7 @@ void Scene::Init()
 	shipTexture = gdl::LoadImage("assets/spaceship.png", gdl::TextureFilterModes::Nearest);
 	portTexture = gdl::LoadImage("assets/spaceport.png", gdl::TextureFilterModes::Nearest);
 	gateTexture = gdl::LoadImage("assets/gate_texture.png", gdl::TextureFilterModes::Nearest);
+
 
     gdl::FBXFile* spacePortFBX = new gdl::FBXFile();
     spaceportScene = spacePortFBX->LoadFile("assets/spaceport.fbx");
@@ -111,7 +126,7 @@ void Scene::Init()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    matcap = gdl::LoadImage("assets/shinyorb.png", gdl::TextureFilterModes::Linear);
+    // matcap = gdl::LoadImage("assets/shinyorb.png", gdl::TextureFilterModes::Linear);
 
     heightMapPNG = new gdl::PNGFile();
     heightMapPNG->ReadFile("assets/testmap.png");
@@ -121,7 +136,7 @@ void Scene::Init()
     terrainNode->transform.scale = gdl::vec3(1.0f, 1.0f, 1.0f);
 
 #ifdef SYNC_PLAYER
-    // Keep this around in PC version
+    // Delete these when running the demo
     delete heightMapPNG;
     delete heightMap;
 #endif
@@ -131,22 +146,23 @@ void Scene::Init()
     if (spaceportScene->GetRootNode() != nullptr)
     {
 
-        hangarDoorLeft = spaceportScene->GetNode("door_2");
+        hangarDoorLeft = spaceportScene->GetNode("door_t1");
         gdl_assert_print(hangarDoorLeft!=nullptr, "No left hangar door");
-        //testmap
-        hangarDoorLeft->transform.position.x = 0.0f;
 
-        hangarDoorRight = spaceportScene->GetNode("door_3");
+        hangarDoorRight = spaceportScene->GetNode("door_t2");
         gdl_assert_print(hangarDoorRight!=nullptr, "No right hangar door");
 
-        elevatorDoorLeft = spaceportScene->GetNode("door");
+        elevatorDoorLeft = spaceportScene->GetNode("door_e1");
         gdl_assert_print(elevatorDoorLeft!=nullptr, "No left elev door");
 
-        elevatorDoorRight = spaceportScene->GetNode("door_1");
+        elevatorDoorRight = spaceportScene->GetNode("door_e2");
         gdl_assert_print(elevatorDoorRight!=nullptr, "No right elev door");
 
         elevatorPlatform = spaceportScene->GetNode("platform");
         gdl_assert_print(elevatorPlatform!=nullptr, "No elev platform");
+
+        tunnelNode = spaceportScene->GetNode("tunnel");
+        gdl_assert_print(tunnelNode!=nullptr, "No tunnel mesh");
     }
     else
     {
@@ -166,10 +182,15 @@ void Scene::Init()
 
 
 
+
     debugFont = gdl::LoadFont("assets/font8x16.png", 8, 16, ' ');
     gdl_assert_print(debugFont != nullptr, "Debug font failed to load");
+    creditFont = gdl::LoadFontCustom("assets/heavydata_32.png", 16, 16, 8, " !ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    //gdl_assert_print(creditFont != nullptr, "Credit font failed to load");
+
 
     DebugMenu = gdl::MenuCreator(debugFont, 1.0f, 1.0);
+    TimerMenu = gdl::MenuCreator(debugFont, 1.0f, 1.0f);
 
 	// Init rendering
     glEnable(GL_DEPTH_TEST);
@@ -189,6 +210,21 @@ void Scene::Init()
 #else
     spaceMusic = gdl::LoadSound("assets/spacemusic.wav");
 #endif
+
+    // DEBUG
+    //spaceMusic = gdl::LoadSound("assets/spacemusic.wav");
+
+
+
+
+
+
+
+
+
+
+
+
     bool rocketInit = gdl::RocketSync::InitRocket(spaceMusic, 68, 4);
     if (rocketInit)
     {
@@ -257,6 +293,17 @@ void Scene::Init()
         gate_rotY = gdl::RocketSync::GetTrack("gate:rotY");
         gate_rotZ = gdl::RocketSync::GetTrack("gate:rotZ");
         gate_ringRot = gdl::RocketSync::GetTrack("gate:ringRot");
+
+        credit_x = gdl::RocketSync::GetTrack("credit:x");
+        credit_y = gdl::RocketSync::GetTrack("credit:y");
+        credit_z = gdl::RocketSync::GetTrack("credit:z");
+        credit_rotY = gdl::RocketSync::GetTrack("credit:rotY");
+        credit_size = gdl::RocketSync::GetTrack("credit:size");
+        credit_textSize = gdl::RocketSync::GetTrack("credit:textSize");
+        credit_textX = gdl::RocketSync::GetTrack("credit:textX");
+        credit_textY = gdl::RocketSync::GetTrack("credit:textY");
+        credit_between = gdl::RocketSync::GetTrack("credit:between");
+        credit_index = gdl::RocketSync::GetTrack("credit:index");
 #endif
 
         gdl::RocketSync::StartSync();
@@ -363,7 +410,7 @@ void Scene::Update()
     // TerrainGenerator::CalculateMatcapFromNormals((TerrainMesh*)terrainNode->mesh);
 
 
-#ifndef SYNC_PLAYER
+//#ifndef SYNC_PLAYER
     //NOTE Controller info valid only on update!
     {
         gdl::ControllerVec2 cp = gdl::GetController(0).GetCursorPosition();
@@ -372,8 +419,9 @@ void Scene::Update()
         cp.yAxis = h-cp.yAxis;
         bool press = gdl::GetController(0).ButtonPress(gdl::WiiButtons::ButtonA);
         DebugMenu.StartMenu(0, gdl::GetScreenHeight(), 100, cp.xAxis, cp.yAxis, press);
+        TimerMenu.StartMenu(gdl::GetScreenWidth()-100, gdl::GetScreenHeight(), 100, cp.xAxis, cp.yAxis, press);
     }
-#endif
+//#endif
 }
 
 void Scene::Draw()
@@ -413,7 +461,7 @@ void Scene::Draw()
     gdl::InitOrthoProjection();
     DrawFadeOut();
 
-#ifndef SYNC_PLAYER
+//#ifndef SYNC_PLAYER
 	glDisable(GL_DEPTH_TEST);
     {
         static bool showScene = false;
@@ -450,7 +498,7 @@ void Scene::Draw()
         }
     }
 	glEnable(GL_DEPTH_TEST);
-#endif
+//#endif
 }
 
 
@@ -512,9 +560,79 @@ void Scene::DrawSpaceportScene()
         //shipScene->DrawNode(shipNode);
 
     glPopMatrix();
+    DrawCredits();
 
     // glDisable(GL_DEPTH_TEST);
 }
+
+void Scene::DrawCredits()
+{
+    gdl::vec3 tunnelPos = spaceportScene->GetWorldPosition(tunnelNode);
+    float xoff = gdl::RocketSync::GetFloat(credit_x);
+    float yoff = gdl::RocketSync::GetFloat(credit_y);
+    float zoff = gdl::RocketSync::GetFloat(credit_z);
+    float rotY = gdl::RocketSync::GetFloat(credit_rotY);
+    float sz = gdl::RocketSync::GetFloat(credit_size);
+    float tsz = 1.0f + gdl::RocketSync::GetFloat(credit_textSize);
+    float btw = gdl::RocketSync::GetFloat(credit_between);
+    float tx = gdl::RocketSync::GetFloat(credit_textX);
+    float ty = gdl::RocketSync::GetFloat(credit_textY);
+
+    u32 custard = TO_RGBA(0xEC, 0xD5, 0x81, 0xFF);
+    u32 rose = TO_RGBA(0xFF, 0x99, 0x88, 0xFF);
+    u32 violet = TO_RGBA(0x7C, 0x7E, 0xC0, 0xFF);
+    u32 green = TO_RGBA(0x1B, 0xBB, 0x9B, 0xFF);
+    u32 fuchsia = TO_RGBA(0xC7, 0x23, 0x53, 0xFF);
+
+
+    static const u32 colorsArray[] = { rose, violet, custard, green, fuchsia};
+
+
+    static const std::string creditsArray[] = {
+        "EMPLOY\nMUFFINTRAP\nENGINEERING\nSOLUTIONS",  // 0
+        "BUILD AT\nRACCOON\nVIOLET\nSHIP\nYARDS",      // 1
+        "USE\nMUFFIN\nTERRA\nFORMING", // 2
+        "VURPO\nSOUND\nSCAPES",  // 3
+        "CALL\nTURUMORE\nASMR\nFOR\nSLEEP"};                     //4
+
+    int index = gdl::RocketSync::GetFloat(credit_index);
+    if (index < 0 || index >= 5)
+    {
+        index = 0;
+    }
+
+    glPushMatrix();
+
+        glTranslatef(xoff, yoff, zoff);
+        glTranslatef(tunnelPos.x, tunnelPos.y, tunnelPos.z);
+        glRotatef(rotY, 0.0f, 1.0f, 0.0f);
+
+        /*
+        glPushMatrix();
+            glColor3f(1.0f, 0.0f, 0.0f);
+            glScalef(1.0f, 1.0f, 0.1f);
+            for (size_t i = 0; i < 5; i++)
+            {
+                SolidCube(sz);
+                glTranslatef(btw, 0.0f, 0.0f);
+            }
+        glPopMatrix();
+        */
+
+        glTranslatef(0.0f, 0.0f, sz* 0.25f);
+        glPushMatrix();
+            for (size_t i = 0; i < 6; i++)
+            {
+                const std::string& credit = creditsArray[index];
+                // Text out of cube
+                creditFont->Print(colorsArray[index], tx, ty, tsz, gdl::LJustify, gdl::LJustify, credit.c_str());
+
+                glTranslatef(btw, 0.0f, 0.0f);
+            }
+        glPopMatrix();
+    glPopMatrix();
+}
+
 
 // This was to test the matcap by drawing rgb values
 void Scene::DrawTerrainNode ( gdl::Node* node )
@@ -556,7 +674,12 @@ void Scene::SaveTracks()
 
 bool Scene::ShouldQuit()
 {
-    return gdl::RocketSync::GetBool(end_demo);
+    bool quitquit = gdl::RocketSync::GetBool(end_demo);
+    if (quitquit)
+    {
+        printf("Demo ends now!");
+    }
+    return quitquit;
 }
 
 
@@ -605,6 +728,18 @@ void Scene::DebugDrawTiming()
     gdl::DrawBoxF(x,                y-2, sw * progress, y-h+2, gdl::Colors::White);
     debugFont->Printf(gdl::Colors::Green, x+4, y+h, debugFont->GetCharacterHeight(), gdl::LJustify, gdl::LJustify, "Elapsed %.1f", spaceMusic->GetElapsedSeconds());
     glColor3f(1.0f, 1.0f, 1.0f);
+
+    // Allow changing the time
+    char timeString[10];
+    for (int i = 0; i < 27; i ++)
+    {
+        std::string time;
+        snprintf(timeString, 10, "%d0s", i);
+        if (TimerMenu.Button(timeString))
+        {
+            gdl::RocketSync::SetSeconds((float)i * 10.0f);
+        }
+    }
 }
 void Scene::DebugDraw3DSpace(float sideLength)
 {

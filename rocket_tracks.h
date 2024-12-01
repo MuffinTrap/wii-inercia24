@@ -68,5 +68,15 @@ extern const sync_track gate_rotX;
 extern const sync_track gate_rotY;
 extern const sync_track gate_rotZ;
 extern const sync_track gate_ringRot;
+extern const sync_track credit_x;
+extern const sync_track credit_y;
+extern const sync_track credit_z;
+extern const sync_track credit_rotY;
+extern const sync_track credit_size;
+extern const sync_track credit_textSize;
+extern const sync_track credit_textX;
+extern const sync_track credit_textY;
+extern const sync_track credit_between;
+extern const sync_track credit_index;
 #endif
  // SYNC_PLAYER

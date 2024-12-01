@@ -20,6 +20,7 @@ public:
 	// Scene drawing functions
 	void DrawSpaceportScene();
 	void DrawEarthScene();
+	void DrawCredits();
 
 	void DebugDraw3DSpace(float sideLength);
 	void DebugDrawTiming();
@@ -58,11 +59,15 @@ public:
 	gdl::Node* elevatorDoorRight = nullptr;
 	gdl::Node* elevatorPlatform = nullptr;
 	gdl::Node* terrainNode = nullptr;
+	gdl::Node* tunnelNode = nullptr;
 
 	gdl::Node* gateRingNode = nullptr;
 
 	gdl::PNGFile* heightMapPNG;
 
 	gdl::MenuCreator DebugMenu;
+	gdl::MenuCreator TimerMenu;
+
+	gdl::Font* creditFont = nullptr;
 
 };

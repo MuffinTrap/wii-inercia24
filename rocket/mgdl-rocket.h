@@ -61,6 +61,7 @@ namespace gdl
 		static void SaveAllTracks();
 
 		static void SetRow(int row);
+		static void SetSeconds(float seconds);
 		static double GetRow();
 		static int GetRowInt();
 		static float GetTime();
