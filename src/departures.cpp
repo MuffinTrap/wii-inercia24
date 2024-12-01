@@ -34,16 +34,54 @@ DeparturesScene::DeparturesScene()
         departure_height = gdl::RocketSync::GetTrack("departure:height");
         departure_depth = gdl::RocketSync::GetTrack("departure:depth");
 #endif
+
+    flights.push_back(CreateInfo("BEER SQUADRON", "BRUSSELS/TERRA", "A1", Future));
+    flights.push_back(CreateInfo("VIKING FLIGHT", "TURKU/TERRA", "A2", Future));
+    flights.push_back(CreateInfo("LOVE PLANES", "BYTE ST./VENUS", "A3", Boarding));
+    flights.push_back(CreateInfo("FINNAIR", "JYVAESKYLAE/TERRA", "B4", Future));
+    flights.push_back(CreateInfo("BEES", "ZWOLLE/TERRA", "B5", Future));
 }
 
 void DeparturesScene::Update()
 {
 }
 
+FlightInfo CreateInfo ( std::string cmp, std::string dest, std::string gateN, FlightStatus stat )
+{
+    FlightInfo info;
+    info.company = cmp;
+    info.destination = dest;
+    info.gate = gateN;
+    info.status = stat;
+    return info;
+}
+
+
 static float Display(gdl::Font* font, float x, float y, u32 color, float scale, const std::string& text)
 {
     font->Print(color, x, y, scale, gdl::LJustify, gdl::LJustify, text.c_str());
     return scale * text.length();
+}
+
+void DeparturesScene::DrawFlight ( const FlightInfo& info )
+{
+    Display(dotFont, linex, liney, yellow, linescale, info.company);
+    Display(dotFont, destColumn, liney, yellow, linescale, info.destination );
+    Display(dotFont, gateColumn, liney, white, linescale, info.gate );
+    u32 col = white;
+    switch(info.status)
+    {
+        case Future:
+            Display(dotFont, statusColumn, liney, col, linescale, "IN FUTURE" );
+            break;
+        case Boarding:
+            col = green;
+            Display(dotFont, statusColumn, liney, col, linescale, "BOARDING" );
+            break;
+        case GateClosing:
+            Display(dotFont, statusColumn, liney, col, linescale, "GATE CLOSING" );
+        break;
+    };
 }
 
 
@@ -52,6 +90,7 @@ void DeparturesScene::Draw(Camera* camera)
     glEnable(GL_DEPTH_TEST);
     camera->SetupFor3D();
     camera->LookAtTarget();
+
 
     glPushMatrix();
         // Draw departures display
@@ -80,10 +119,6 @@ void DeparturesScene::Draw(Camera* camera)
         static const std::string boarding = "BOARDING";
         static const std::string closing = "GATE CLOSING";
 
-        u32 red = gdl::Colors::Red;
-        u32 green = gdl::Colors::LightGreen;
-        u32 white = gdl::Colors::White;
-        u32 yellow = gdl::Colors::Yellow;
 
         float scale = 1.0f + gdl::RocketSync::GetFloat(departure_textScale);
         // Draw company or callsign
@@ -91,7 +126,7 @@ void DeparturesScene::Draw(Camera* camera)
         float y = 0;
 
         Display(dotFont, x, y, white, scale, "FLIGHT                DESTINATION            GATE STATUS");
-        y -= scale;
+        y -= scale * 2.0f;
 
         int showText = gdl::RocketSync::GetInt(departure_text);
 
@@ -106,8 +141,12 @@ void DeparturesScene::Draw(Camera* camera)
 
         float nameLength = (company.length()) * scale;
         x += nameLength;
+        destColumn = x;
         x += Display(dotFont, x, y, yellow, scale, destination );
+        gateColumn = x;
         x += Display(dotFont, x, y, white, scale, gate ) + 2 * scale;
+
+        statusColumn = x;
         if (showText == 1)
         {
             Display(dotFont, x, y, green, scale, boarding );
@@ -115,6 +154,15 @@ void DeparturesScene::Draw(Camera* camera)
         else
         {
             Display(dotFont, x, y, red, scale, closing );
+        }
+        linescale = scale;
+        linex = 0;
+        liney = y;
+        for (size_t i = 0; i < flights.size(); i++)
+        {
+
+            liney -= scale + 0.5f * scale;
+            DrawFlight(flights[i]);
         }
     glPopMatrix();
 }
