@@ -60,6 +60,7 @@ public:
 	gdl::Node* elevatorPlatform = nullptr;
 	gdl::Node* terrainNode = nullptr;
 	gdl::Node* tunnelNode = nullptr;
+	gdl::Node* texturedShipNode = nullptr;
 
 	gdl::Node* gateRingNode = nullptr;
 

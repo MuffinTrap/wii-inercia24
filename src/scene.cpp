@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <mgdl/mgdl-draw2d.h>
 #include <mgdl/mgdl-util.h>
+#include <cstring>
 
 #ifndef SYNC_PLAYER
 
@@ -97,20 +98,22 @@ void Scene::Init()
 	shipTexture = gdl::LoadImage("assets/spaceship.png", gdl::TextureFilterModes::Nearest);
 	portTexture = gdl::LoadImage("assets/spaceport.png", gdl::TextureFilterModes::Nearest);
 	gateTexture = gdl::LoadImage("assets/gate_texture.png", gdl::TextureFilterModes::Nearest);
+    matcap = gdl::LoadImage("assets/shinyorb.png", gdl::TextureFilterModes::Linear);
 
 
     gdl::FBXFile* spacePortFBX = new gdl::FBXFile();
     spaceportScene = spacePortFBX->LoadFile("assets/spaceport.fbx");
     spaceportScene->SetMaterialTexture("spaceport.png", portTexture);
 
-
     gdl::FBXFile* shipFBX = new gdl::FBXFile();
-    shipScene = shipFBX->LoadFile("assets/ship.fbx");
-    shipScene->SetMaterialTexture("standardSurface1", shipTexture);
+    shipScene = shipFBX->LoadFile("assets/ship_with_uvs.fbx");
+    shipScene->SetMaterialTexture("standardSurface1", matcap);
+    shipScene->SetMaterialTexture("Material.002", matcap);
 
     gdl::FBXFile* gateFBX = new gdl::FBXFile();
     gateScene = gateFBX->LoadFile("assets/gate.fbx");
     gateScene->SetMaterialTexture("gate_texture.png", gateTexture);
+    gateRingNode = gateScene->GetNode("ring");
 
 
 	// BG
@@ -126,7 +129,6 @@ void Scene::Init()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    // matcap = gdl::LoadImage("assets/shinyorb.png", gdl::TextureFilterModes::Linear);
 
     heightMapPNG = new gdl::PNGFile();
     heightMapPNG->ReadFile("assets/testmap.png");
@@ -169,28 +171,61 @@ void Scene::Init()
         printf("No root node set!\n");
     }
 
-    gateRingNode = gateScene->GetNode("ring");
-
     shipNode = shipScene->GetNode("pCylinder5");
     gdl_assert_print(shipNode!=nullptr, "No ship");
-
     // Connect the ship to the platform
     spaceportScene->SetActiveParentNode(elevatorPlatform);
     spaceportScene->PushChildNode(shipNode);
 
+    // Duplicate ship node
+    // ///////////////////////////////////////////////////
+
+
+    // Duplicate mesh
+    gdl::Mesh* shipDuplicate = new gdl::Mesh();
+
+		shipDuplicate->indices = shipNode->mesh->indices;
+		shipDuplicate->indexCount = shipNode->mesh->indexCount;
+		shipDuplicate->vertexCount = shipNode->mesh->vertexCount;
+		shipDuplicate->positions = shipNode->mesh->positions;
+		shipDuplicate->normals = shipNode->mesh->normals;
+
+        // Make copy of uvs because the matcap mesh constantly changes them
+		shipDuplicate->uvs = new GLfloat[shipDuplicate->vertexCount * 2];
+        std::memcpy(shipDuplicate->uvs, shipNode->mesh->uvs, sizeof(GLfloat) * shipDuplicate->vertexCount * 2);
+
+		shipDuplicate->name = std::string("textureShip");
+		shipDuplicate->uniqueId = shipNode->mesh->uniqueId;
+
+    texturedShipNode = new gdl::Node();
+    texturedShipNode->mesh = shipDuplicate;
+    texturedShipNode->name = "texturedShip";
+    texturedShipNode->light = nullptr;
+    texturedShipNode->children = std::vector<gdl::Node*>();
+
+    gdl::Material* shipMaterial = new gdl::Material();
+    shipMaterial->name = std::string("ship");
+    shipMaterial->texture = shipTexture;
+    shipScene->AddMaterial(shipMaterial);
+    texturedShipNode->material = shipMaterial;
+
+    // Set scale
+    texturedShipNode->transform = shipNode->transform;
+    float small = 0.001f;
+    texturedShipNode->transform.SetScalef(1.0f + small);
+
+    spaceportScene->SetActiveParentNode(shipNode);
+    spaceportScene->PushChildNode(texturedShipNode);
 
 
 
 
 
-    debugFont = gdl::LoadFont("assets/font8x16.png", 8, 16, ' ');
-    gdl_assert_print(debugFont != nullptr, "Debug font failed to load");
+
     creditFont = gdl::LoadFontCustom("assets/heavydata_32.png", 16, 16, 8, " !ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-    //gdl_assert_print(creditFont != nullptr, "Credit font failed to load");
+    gdl_assert_print(creditFont != nullptr, "Credit font failed to load");
 
 
-    DebugMenu = gdl::MenuCreator(debugFont, 1.0f, 1.0);
-    TimerMenu = gdl::MenuCreator(debugFont, 1.0f, 1.0f);
 
 	// Init rendering
     glEnable(GL_DEPTH_TEST);
@@ -211,9 +246,13 @@ void Scene::Init()
     spaceMusic = gdl::LoadSound("assets/spacemusic.wav");
 #endif
 
-    // DEBUG
-    //spaceMusic = gdl::LoadSound("assets/spacemusic.wav");
 
+    // DEBUG
+    debugFont = gdl::LoadFont("assets/font8x16.png", 8, 16, ' ');
+    gdl_assert_print(debugFont != nullptr, "Ibm font failed to load");
+
+    DebugMenu = gdl::MenuCreator(debugFont, 1.0f, 1.0);
+    TimerMenu = gdl::MenuCreator(debugFont, 1.0f, 1.0f);
 
 
 
@@ -226,8 +265,7 @@ void Scene::Init()
 
 
     bool rocketInit = gdl::RocketSync::InitRocket(spaceMusic, 68, 4);
-    if (rocketInit)
-    {
+    gdl_assert_print(rocketInit, "Failed to init rocket");
         camera = new Camera();
         departures = new DeparturesScene();
 #ifndef SYNC_PLAYER
@@ -307,7 +345,6 @@ void Scene::Init()
 #endif
 
         gdl::RocketSync::StartSync();
-    }
 }
 
 void Scene::Update()
@@ -400,16 +437,20 @@ void Scene::Update()
             break;
 
         default:
+            gdl_assert_print(spaceportScene != nullptr && shipNode != nullptr, "No ship or spaceport");
         gdl::vec3 shipPos = spaceportScene->GetWorldPosition(shipNode);
+
         camera->Update(gdl::GetDeltaTime(), shipPos );
         break;
     }
 
+    // Update ship matcap
 
     // TerrainGenerator::CalculateMatcapFromCamera((TerrainMesh*)terrainNode->mesh, camera->GetDirection());
     // TerrainGenerator::CalculateMatcapFromNormals((TerrainMesh*)terrainNode->mesh);
 
 
+    // DEBUG
 //#ifndef SYNC_PLAYER
     //NOTE Controller info valid only on update!
     {
@@ -461,6 +502,7 @@ void Scene::Draw()
     gdl::InitOrthoProjection();
     DrawFadeOut();
 
+    // DEBUG
 //#ifndef SYNC_PLAYER
 	glDisable(GL_DEPTH_TEST);
     {
@@ -526,43 +568,42 @@ void Scene::DrawEarthScene()
     glDisable(GL_BLEND);
 
 
-    // glEnable(GL_DEPTH_TEST);
     camera->SetupFor3D();
     camera->LookAtTarget();
     glPushMatrix();
         shipScene->Draw();
         glColor3f(1.0f, 1.0f, 1.0f);
     glPopMatrix();
-    // glDisable(GL_DEPTH_TEST);
 }
 
 void Scene::DrawSpaceportScene()
 {
     DrawBG(spacebg, 0.0f, 0.0f, 20.0f);
 
-    // glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     camera->SetupFor3D();
     camera->LookAtTarget();
+
+    glMatrixMode(GL_MODELVIEW);
 
     glPushMatrix();
 
         if (gdl::RocketSync::GetBool(drawTerrain))
         {
             spaceportScene->DrawNode(terrainNode);
-            // DrawTerrainNode(terrainNode);
         }
 
         if (gdl::RocketSync::GetBool(drawSpaceport))
         {
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
            spaceportScene->Draw();
+           glDisable(GL_BLEND);
         }
-        //shipScene->DrawNode(shipNode);
 
     glPopMatrix();
-    DrawCredits();
+    //DrawCredits();
 
-    // glDisable(GL_DEPTH_TEST);
 }
 
 void Scene::DrawCredits()
@@ -583,20 +624,22 @@ void Scene::DrawCredits()
     u32 violet = TO_RGBA(0x7C, 0x7E, 0xC0, 0xFF);
     u32 green = TO_RGBA(0x1B, 0xBB, 0x9B, 0xFF);
     u32 fuchsia = TO_RGBA(0xC7, 0x23, 0x53, 0xFF);
+    u32 blue = TO_RGBA(0x00, 0xe2, 0xff, 0xff);
 
 
-    static const u32 colorsArray[] = { rose, violet, custard, green, fuchsia};
+    static const u32 colorsArray[] = { rose, violet, custard, green, fuchsia, blue};
 
 
     static const std::string creditsArray[] = {
         "EMPLOY\nMUFFINTRAP\nENGINEERING\nSOLUTIONS",  // 0
-        "BUILD AT\nRACCOON\nVIOLET\nSHIP\nYARDS",      // 1
-        "USE\nMUFFIN\nTERRA\nFORMING", // 2
-        "VURPO\nSOUND\nSCAPES",  // 3
-        "CALL\nTURUMORE\nASMR\nFOR\nSLEEP"};                     //4
+        "BUILD AT\nRACCOON\nVIOLET\nSHIP YARDS",      // 1
+        "USE\nMUFFIN\nTERRA\nFORMING",           // 2
+        "VURPO\nSOUND\nSCAPES",                  // 3
+        "CALL\nTURUMORE\nASMR\nFOR SLEEP",      // 4
+        "IJORO\nNATURAL\nPAINTS\nFOR\nENVIRONMENT"};      // 5
 
     int index = gdl::RocketSync::GetFloat(credit_index);
-    if (index < 0 || index >= 5)
+    if (index < 0 || index >= 6)
     {
         index = 0;
     }
@@ -607,6 +650,7 @@ void Scene::DrawCredits()
         glTranslatef(tunnelPos.x, tunnelPos.y, tunnelPos.z);
         glRotatef(rotY, 0.0f, 1.0f, 0.0f);
 
+        // Background quad for text???
         /*
         glPushMatrix();
             glColor3f(1.0f, 0.0f, 0.0f);
@@ -632,40 +676,6 @@ void Scene::DrawCredits()
         glPopMatrix();
     glPopMatrix();
 }
-
-
-// This was to test the matcap by drawing rgb values
-void Scene::DrawTerrainNode ( gdl::Node* node )
-{
-    glShadeModel(GL_SMOOTH);
-	gdl::vec3 t = node->transform.position;
-	glPushMatrix();
-		glTranslatef(t.x, t.y, t.z);
-
-		gdl::vec3 r = node->transform.rotationDegrees;
-		glRotatef(r.x, 1.0f, 0.0f, 0.0f);
-		glRotatef(r.y, 0.0f, 1.0f, 0.0f);
-		glRotatef(r.z, 0.0f, 0.0f, 1.0f);
-
-		gdl::vec3 s = node->transform.scale;
-		glScalef(s.x, s.y, s.z);
-
-		gdl::Mesh* m = node->mesh;
-		if (m != nullptr)
-		{
-            TerrainMesh* tm = static_cast<TerrainMesh*>(m);
-            if (tm != nullptr)
-            {
-                glEnable(GL_BLEND);
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                tm->DrawInColor();
-                glDisable(GL_BLEND);
-            }
-		}
-	glPopMatrix();
-    glShadeModel(GL_FLAT);
-}
-
 
 void Scene::SaveTracks()
 {
@@ -740,42 +750,5 @@ void Scene::DebugDrawTiming()
             gdl::RocketSync::SetSeconds((float)i * 10.0f);
         }
     }
-}
-void Scene::DebugDraw3DSpace(float sideLength)
-{
-    glBegin(GL_LINES);
-    // ORIGO
-        glColor3f(0.2f, 1.0f, 0.2f);
-        glVertex3f(0.0f, 0.0f, 0.0f);
-        glVertex3f(0.0f, sideLength/2.0f, 0.0f);
-
-        glColor3f(1.0f, 0.2f, 0.2f);
-        glVertex3f(0.0f, 0.0f, 0.0f);
-        glVertex3f(sideLength/2.0f, 0.0f, 0.0f);
-
-        glColor3f(0.2f, 0.2f, 1.0f);
-        glVertex3f(0.0f, 0.0f, 0.0f);
-        glVertex3f(0.0f, 0.0f, sideLength/2.0f);
-
-    // BOX
-        glColor3f(0.7f, 0.7f, 0.7f);
-        glVertex3f(sideLength/2.0f, 0.0f, sideLength/2.0f);
-        glVertex3f(-sideLength/2.0f, 0.0f, sideLength/2.0f);
-
-        glVertex3f(-sideLength/2.0f, 0.0f, sideLength/2.0f);
-        glVertex3f(-sideLength/2.0f, 0.0f, -sideLength/2.0f);
-
-        glVertex3f(-sideLength/2.0f, 0.0f, -sideLength/2.0f);
-        glVertex3f(sideLength/2.0f, 0.0f, -sideLength/2.0f);
-
-        glVertex3f(sideLength/2.0f, sideLength/2.0f, sideLength/2.0f);
-        glVertex3f(-sideLength/2.0f, sideLength/2.0f, sideLength/2.0f);
-
-        glVertex3f(-sideLength/2.0f, sideLength/2.0f, sideLength/2.0f);
-        glVertex3f(-sideLength/2.0f, sideLength/2.0f, -sideLength/2.0f);
-
-        glVertex3f(-sideLength/2.0f, sideLength/2.0f, -sideLength/2.0f);
-        glVertex3f(sideLength/2.0f, sideLength/2.0f, -sideLength/2.0f);
-    glEnd();
 }
 
