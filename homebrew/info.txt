@@ -1,0 +1,37 @@
+Marmot Spacelines 2024
+
+Demo for Nintendo Wii by Marmot.
+
+Released at Inercia 2024
+7.12.2024
+
+
+Credits:
+
+Code, 3D modelling, textures, design and direction: muffintrap
+Matcap code: MuffinHop
+Ship 3D Model: RaccoonViolet
+Ship UV mapping: Ijoro
+Music: Vurpo
+Voice acting: RaccoonViolet & Turumore
+
+Background:
+
+What if commercial passenger airline, but in space?!
+Idea came from watching Cowboy Bebob and the many little practical details.
+
+References and sources:
+Earth Image: NASA
+Ship reference: Gundam Wing OZ carrier aircraft
+Gate design: Cowboy Bebob
+
+
+Source code for the demo can be found in github:
+https://github.com/MuffinTrap/wii-inercia24
+
+The demo uses the muffintrap fork of the mtek-gdl library:
+https://github.com/MuffinTrap/mtek-gdl
+
+- muffintrap
+
+

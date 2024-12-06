@@ -25,6 +25,7 @@ public:
 	void DebugDraw3DSpace(float sideLength);
 	void DebugDrawTiming();
 	void DrawThirdsGuides();
+	void DrawStars(const gdl::vec3& center);
 
 	void DrawTerrainNode(gdl::Node* node);
 	void DrawBG(gdl::Image* bgImage, float xoffset, float yoffset, float scale);
@@ -36,6 +37,7 @@ public:
 	gdl::Scene* shipScene = nullptr;
 	gdl::Scene* spaceportScene = nullptr;
 	gdl::Scene* gateScene = nullptr;
+	gdl::Scene* gearScene = nullptr;
 
 	gdl::Image* shipTexture = nullptr;
 	gdl::Image* portTexture = nullptr;
@@ -63,6 +65,10 @@ public:
 	gdl::Node* tunnelNode = nullptr;
 	gdl::Node* texturedShipNode = nullptr;
 	gdl::Node* hangarNode = nullptr;
+	gdl::Node* gearNode = nullptr;
+	gdl::Node* gearNodeBackLeft = nullptr;
+	gdl::Node* gearNodeBackRight = nullptr;
+	gdl::Node* starSphereNode;
 
 	std::vector<gdl::Node*> railingNodes;
 
@@ -72,6 +78,7 @@ public:
 
 	gdl::MenuCreator DebugMenu;
 	gdl::MenuCreator TimerMenu;
+	gdl::vec3 shipPos;
 
 	gdl::Font* creditFont = nullptr;
 

@@ -20,9 +20,9 @@ public:
 	void DebugDraw(short x, short y, gdl::Font* font);
 	gdl::vec3 GetDirection();
 
+	gdl::vec3 currentPosition; // Do not snap to position instantly
 private:
 	gdl::vec3 up;
-	gdl::vec3 currentPosition; // Do not snap to position instantly
 
 
 

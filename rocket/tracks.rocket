@@ -1,11 +1,9 @@
 <sync rows="1300">
 	<tracks>
-		<track name="showDepartures">
-			<key interpolation="0" value="10" row="0"/>
-		</track>
+		<track name="showDepartures"/>
 		<track name="fade_out">
-			<key interpolation="1" value="0.49999991" row="0"/>
-			<key interpolation="0" value="0" row="24"/>
+			<key interpolation="1" value="1" row="0"/>
+			<key interpolation="0" value="0" row="4"/>
 			<key interpolation="1" value="0" row="72"/>
 			<key interpolation="1" value="1" row="79"/>
 			<key interpolation="2" value="1" row="86"/>
@@ -69,9 +67,7 @@
 		<track name="drawTerrain">
 			<key interpolation="0" value="0" row="0"/>
 			<key interpolation="0" value="1" row="537"/>
-			<key interpolation="0" value="0" row="659"/>
-			<key interpolation="0" value="0" row="660"/>
-			<key interpolation="0" value="0" row="661"/>
+			<key interpolation="0" value="0" row="657"/>
 			<key interpolation="0" value="1" row="687"/>
 		</track>
 		<track name="drawSpaceport">
@@ -489,6 +485,31 @@
 			<key interpolation="0" value="0.0099999998" row="776"/>
 			<key interpolation="0" value="0.001" row="816"/>
 			<key interpolation="0" value="-1" row="835"/>
+		</track>
+		<track name="ship:gearRotX"/>
+		<track name="ship:gearRotY">
+			<key interpolation="0" value="-180" row="112"/>
+		</track>
+		<track name="ship:gearScale">
+			<key interpolation="0" value="-0.80000001" row="112"/>
+			<key interpolation="0" value="-0.85000002" row="299"/>
+			<key interpolation="0" value="-1" row="816"/>
+		</track>
+		<track name="ship:gearX">
+			<key interpolation="0" value="0.20000002" row="112"/>
+			<key interpolation="0" value="0.5" row="299"/>
+		</track>
+		<track name="ship:gearY">
+			<key interpolation="0" value="-4.4000006" row="112"/>
+		</track>
+		<track name="ship:gearZ">
+			<key interpolation="0" value="10.3" row="112"/>
+		</track>
+		<track name="ship:gearBetween">
+			<key interpolation="0" value="3.2000008" row="112"/>
+		</track>
+		<track name="ship:gearFrontBack">
+			<key interpolation="0" value="-23.500002" row="112"/>
 		</track>
 		<track name="terrain:x">
 			<key interpolation="1" value="-350" row="0"/>

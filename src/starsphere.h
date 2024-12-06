@@ -8,7 +8,7 @@ class StarSphere
 {
 public:
 
-	gdl::Mesh* CreateSphere();
+	gdl::Mesh* CreateSphere(int starAmount, float radius, float sizeMin, float sizeMax);
 
 
 };

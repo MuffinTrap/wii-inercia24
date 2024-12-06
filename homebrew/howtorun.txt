@@ -1,0 +1,20 @@
+How to run the demo on Wii
+
+Copy the folder into the apps/ folder on the SD card of your Wii,
+so that the file structure is
+
+SD Card root / 
+- apps / 
+--  marmot_spacelines/
+---  boot.dol
+---  icon.png
+---  meta.xml
+---  assets/
+----  all the asset files
+
+How to run the demo in Dolphin
+
+Select Option/Configuration/Wii and make the 
+SD Sync Folder to point in the marmot_spacelines folder.
+Run the boot.dol
+

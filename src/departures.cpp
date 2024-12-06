@@ -94,10 +94,6 @@ void DeparturesScene::DrawFlight ( const FlightInfo& info )
 
 void DeparturesScene::Draw(Camera* camera, gdl::Scene* spacePortScene, gdl::Node* hangarNode)
 {
-    glEnable(GL_DEPTH_TEST);
-
-
-
     camera->SetupFor3D();
     camera->LookAtTarget();
 
@@ -184,6 +180,7 @@ void DeparturesScene::Draw(Camera* camera, gdl::Scene* spacePortScene, gdl::Node
             DrawFlight(flights[i]);
         }
     glPopMatrix();
+
 }
 
 

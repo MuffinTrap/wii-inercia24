@@ -2,6 +2,7 @@
 #include "scene.h"
 #include "terraingen.h"
 #include "draw3d.h"
+#include "starsphere.h"
 #include "../rocket/mgdl-rocket.h"
 #include "../tracks.h"
 #include <glm/gtc/matrix_transform.hpp>
@@ -46,6 +47,15 @@
     static ROCKET_TRACK ship_scale;
     static ROCKET_TRACK ship_illumination;
     static ROCKET_TRACK ship_detailScale;
+    static ROCKET_TRACK ship_gearRotX;
+    static ROCKET_TRACK ship_gearRotY;
+    static ROCKET_TRACK ship_gearScale;
+    static ROCKET_TRACK ship_gearX;
+    static ROCKET_TRACK ship_gearY;
+    static ROCKET_TRACK ship_gearZ;
+    static ROCKET_TRACK ship_gearBetween;
+    static ROCKET_TRACK ship_gearFrontBack;
+
 
     // Terrain
     static ROCKET_TRACK terrain_x;
@@ -119,6 +129,11 @@ void Scene::Init()
     gateScene->SetMaterialTexture("gate_texture.png", gateTexture);
     gateRingNode = gateScene->GetNode("ring");
 
+    gdl::FBXFile* gearFBX = new gdl::FBXFile();
+    gearScene = gearFBX->LoadFile("assets/gear.fbx");
+    gearScene->SetMaterialTexture("spaceport.png", portTexture);
+    gearNode = gearScene->GetNode("gear")->children[0];
+
 
 	// BG
 	spacebg = gdl::LoadImage("assets/spacebg.png", gdl::TextureFilterModes::Linear);
@@ -145,6 +160,14 @@ void Scene::Init()
     terrain = TerrainGenerator::GenerateFromPNG(lastTerrainHeightMultiplier, lastTerrainUVrange, heightMapPNG);
     terrainNode = new gdl::Node("terrain", terrain, new gdl::Material("terrain", moonsurface));
     terrainNode->transform.scale = gdl::vec3(1.0f, 1.0f, 1.0f);
+
+    // Create star sphere
+
+    StarSphere sp;
+    gdl::Mesh* stars =sp.CreateSphere(256, 1000.0f, 1.01f, 3.0f);
+    gdl::Material* starMat = new gdl::Material("star", gdl::LoadImage("assets/star_texture.png", gdl::Nearest));
+    starSphereNode = new gdl::Node("starspehere", stars, starMat);
+    starSphereNode->transform.position = gdl::vec3(0.0f, 0.0f, 0.0f);
 
 #ifdef SYNC_PLAYER
     // Delete these when running the demo
@@ -187,6 +210,9 @@ void Scene::Init()
     {
         printf("No root node set!\n");
     }
+
+    //spaceportScene->SetActiveParentNode(spaceportScene->GetRootNode());
+    //spaceportScene->PushChildNode(starSphereNode);
 
     shipNode = shipScene->GetNode("pCylinder5");
     gdl_assert_print(shipNode!=nullptr, "No ship");
@@ -235,6 +261,24 @@ void Scene::Init()
     spaceportScene->PushChildNode(texturedShipNode);
 
 
+    // Duplicate landing gear
+    gdl::Node* wheel = gearNode;
+    spaceportScene->PushChildNode(wheel);
+
+    gdl::Mesh* gearMesh = wheel->mesh;
+    gearNodeBackLeft = new gdl::Node("leftGear", gearMesh, wheel->material);
+    gearNodeBackRight = new gdl::Node("rightGear", gearMesh, wheel->material);
+    gearNodeBackLeft->light = nullptr;
+    gearNodeBackRight->light = nullptr;
+    gearNodeBackLeft->transform.position = wheel->transform.position;
+    gearNodeBackRight->transform.position = wheel->transform.position;
+    gearNodeBackRight->transform.rotationDegrees.z = -90.0f;
+    gearNodeBackLeft->transform.rotationDegrees.z = -90.0f;
+    gearNodeBackRight->transform.rotationDegrees.y = -180.0f;
+    gearNodeBackLeft->transform.rotationDegrees.y = -180.0f;
+    gearNode->transform.rotationDegrees.y = -180.0f;
+    spaceportScene->PushChildNode(gearNodeBackLeft);
+    spaceportScene->PushChildNode(gearNodeBackRight);
 
 
 
@@ -263,6 +307,7 @@ void Scene::Init()
     spaceMusic = gdl::LoadSound("assets/spacemusic.wav");
 #endif
 
+#ifndef SYNC_PLAYER
 
     // DEBUG
     debugFont = gdl::LoadFont("assets/font8x16.png", 8, 16, ' ');
@@ -270,6 +315,7 @@ void Scene::Init()
 
     DebugMenu = gdl::MenuCreator(debugFont, 1.0f, 1.0);
     TimerMenu = gdl::MenuCreator(debugFont, 1.0f, 1.0f);
+#endif
 
 
 
@@ -323,6 +369,16 @@ void Scene::Init()
         ship_scale = gdl::RocketSync::GetTrack("ship:scale");
         ship_illumination = gdl::RocketSync::GetTrack("ship:illumination");
         ship_detailScale = gdl::RocketSync::GetTrack("ship:detailScale");
+
+        // Landing gear
+        ship_gearRotX = gdl::RocketSync::GetTrack("ship:gearRotX");
+        ship_gearRotY = gdl::RocketSync::GetTrack("ship:gearRotY");
+        ship_gearScale = gdl::RocketSync::GetTrack("ship:gearScale");
+        ship_gearX = gdl::RocketSync::GetTrack("ship:gearX");
+        ship_gearY = gdl::RocketSync::GetTrack("ship:gearY");
+        ship_gearZ = gdl::RocketSync::GetTrack("ship:gearZ");
+        ship_gearBetween = gdl::RocketSync::GetTrack("ship:gearBetween");
+        ship_gearFrontBack = gdl::RocketSync::GetTrack("ship:gearFrontBack");
 
 
         terrain_x = gdl::RocketSync::GetTrack("terrain:x");
@@ -394,6 +450,25 @@ void Scene::Update()
     shipNode->transform.SetScalef( gdl::RocketSync::GetFloat(ship_scale));
     texturedShipNode->transform.SetScalef(1.0f + gdl::RocketSync::GetFloat(ship_detailScale));
 
+    gearNode->transform.position.x = gdl::RocketSync::GetFloat(ship_gearX);
+    gearNode->transform.position.y = gdl::RocketSync::GetFloat(ship_gearY);
+    gearNode->transform.position.z = gdl::RocketSync::GetFloat(ship_gearZ);
+    gearNode->transform.rotationDegrees.x = gdl::RocketSync::GetFloat(ship_gearRotX);
+    gearNode->transform.rotationDegrees.y = gdl::RocketSync::GetFloat(ship_gearRotY);
+
+    float gscale = 1.0f + gdl::RocketSync::GetFloat(ship_gearScale);
+    gearNode->transform.SetScalef(gscale);
+
+    gearNodeBackLeft->transform.position = gearNode->transform.position;
+    gearNodeBackLeft->transform.SetScalef(gscale);
+    gearNodeBackLeft->transform.position.z += gdl::RocketSync::GetFloat(ship_gearFrontBack);
+    gearNodeBackLeft->transform.position.x += gdl::RocketSync::GetFloat(ship_gearBetween);
+
+    gearNodeBackRight->transform.position = gearNode->transform.position;
+    gearNodeBackRight->transform.SetScalef(gscale);
+    gearNodeBackRight->transform.position.z += gdl::RocketSync::GetFloat(ship_gearFrontBack);
+    gearNodeBackRight->transform.position.x -= gdl::RocketSync::GetFloat(ship_gearBetween);
+
     gdl::vec3 tpos = gdl::vec3(gdl::RocketSync::GetFloat(terrain_x), gdl::RocketSync::GetFloat(terrain_y), gdl::RocketSync::GetFloat(terrain_z));
     terrainNode->transform.position = tpos;
     terrainNode->transform.SetScalef(gdl::RocketSync::GetFloat(terrain_scale));
@@ -464,11 +539,12 @@ void Scene::Update()
 
         default:
             gdl_assert_print(spaceportScene != nullptr && shipNode != nullptr, "No ship or spaceport");
-        gdl::vec3 shipPos = spaceportScene->GetWorldPosition(shipNode);
+        shipPos = spaceportScene->GetWorldPosition(shipNode);
 
         camera->Update(gdl::GetDeltaTime(), shipPos );
         break;
     }
+
 
     // Update ship matcap
 
@@ -477,7 +553,7 @@ void Scene::Update()
 
 
     // DEBUG
-//#ifndef SYNC_PLAYER
+#ifndef SYNC_PLAYER
     //NOTE Controller info valid only on update!
     {
         gdl::ControllerVec2 cp = gdl::GetController(0).GetCursorPosition();
@@ -488,7 +564,7 @@ void Scene::Update()
         DebugMenu.StartMenu(0, gdl::GetScreenHeight(), 100, cp.xAxis, cp.yAxis, press);
         TimerMenu.StartMenu(gdl::GetScreenWidth()-100, gdl::GetScreenHeight(), 100, cp.xAxis, cp.yAxis, press);
     }
-//#endif
+#endif
 }
 
 void Scene::Draw()
@@ -510,6 +586,7 @@ void Scene::Draw()
             camera->LookAtTarget();
             spaceportScene->DrawNode(terrainNode);
             shipScene->Draw();
+            DrawStars(terrainNode->transform.position);
             break;
 
         case Earth:
@@ -522,6 +599,7 @@ void Scene::Draw()
             camera->LookAtTarget();
             gateScene->Draw();
             shipScene->Draw();
+            DrawStars(camera->currentPosition);
 
             break;
     }
@@ -529,7 +607,7 @@ void Scene::Draw()
     DrawFadeOut();
 
     // DEBUG
-//#ifndef SYNC_PLAYER
+#ifndef SYNC_PLAYER
 	glDisable(GL_DEPTH_TEST);
     {
         static bool showScene = false;
@@ -539,7 +617,7 @@ void Scene::Draw()
         }
         if (showScene)
         {
-            spaceportScene->DebugDraw(debugFont, 10, gdl::GetScreenHeight() - 10, gdl::Scene::DebugFlag::Position);
+            spaceportScene->DebugDraw(debugFont, 10, gdl::GetScreenHeight() - 10, 0);
             shipScene->DebugDraw(debugFont, 200, gdl::GetScreenHeight() - 10, gdl::Scene::DebugFlag::Position);
         }
     }
@@ -567,7 +645,7 @@ void Scene::Draw()
         }
     }
 	glEnable(GL_DEPTH_TEST);
-//#endif
+#endif
 }
 
 
@@ -582,6 +660,10 @@ void Scene::DrawBG ( gdl::Image* bgImage, float xoffset, float yoffset, float sc
 
 void Scene::DrawEarthScene()
 {
+    camera->SetupFor3D();
+    camera->LookAtTarget();
+    DrawStars(camera->currentPosition);
+
     DrawBG(earthbg, gdl::RocketSync::GetFloat(earth_x),
            gdl::RocketSync::GetFloat(earth_y),
            gdl::RocketSync::GetFloat(earth_scale));
@@ -605,7 +687,7 @@ void Scene::DrawEarthScene()
 
 void Scene::DrawSpaceportScene()
 {
-    DrawBG(spacebg, 0.0f, 0.0f, 20.0f);
+    // DrawBG(spacebg, 0.0f, 0.0f, 20.0f);
 
     glDepthFunc(GL_LEQUAL);
     camera->SetupFor3D();
@@ -624,13 +706,34 @@ void Scene::DrawSpaceportScene()
         {
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-           spaceportScene->Draw();
-           glDisable(GL_BLEND);
+                spaceportScene->Draw();
+            glDisable(GL_BLEND);
         }
 
     glPopMatrix();
     DrawCredits();
+    DrawStars(camera->currentPosition);
+}
 
+void Scene::DrawStars(const gdl::vec3& center)
+{
+    gdl::Node* node = starSphereNode;
+	glPushMatrix();
+
+    glTranslatef(center.x, center.y, center.z);
+
+    glColor3f(1.0f, 1.0f, 1.0f);
+		gdl::Mesh* m = node->mesh;
+		if (m != nullptr)
+		{
+			if (node->material != nullptr)
+			{
+				// TODO do not reapply same material
+				node->material->Apply();
+			}
+			m->DrawElements();
+		}
+	glPopMatrix();
 }
 
 void Scene::DrawCredits()
