@@ -33,6 +33,9 @@
     static ROCKET_TRACK platform_z;
     static ROCKET_TRACK platform_rotY;
 
+    // Moves the danger zone railings in the tunnel up and down
+    static ROCKET_TRACK platform_railingY;
+
     // Ship itself
     static ROCKET_TRACK ship_x;
     static ROCKET_TRACK ship_y;
@@ -42,6 +45,7 @@
     static ROCKET_TRACK ship_rotZ;
     static ROCKET_TRACK ship_scale;
     static ROCKET_TRACK ship_illumination;
+    static ROCKET_TRACK ship_detailScale;
 
     // Terrain
     static ROCKET_TRACK terrain_x;
@@ -125,8 +129,13 @@ void Scene::Init()
     moonsurface = gdl::LoadImage("assets/moonsurface.png", gdl::TextureFilterModes::Linear);
     // Setup mirroring on the surface
     glBindTexture(GL_TEXTURE_2D, moonsurface->GetTextureId());
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // NOTE No MIRRORED_REPEAT on WINDOWS
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    GLint repeatMode = GL_REPEAT;
+#ifndef MGDL_PLATFORM_WINDOWS
+    // NOTE No MIRRORED_REPEAT on WINDOWS
+    repeatMode = GL_MIRRORED_REPEAT;
+#endif
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, repeatMode);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, repeatMode);
     glBindTexture(GL_TEXTURE_2D, 0);
 
 
@@ -165,6 +174,14 @@ void Scene::Init()
 
         tunnelNode = spaceportScene->GetNode("tunnel");
         gdl_assert_print(tunnelNode!=nullptr, "No tunnel mesh");
+
+        hangarNode = spaceportScene->GetNode("terminal");
+        gdl_assert_print(hangarNode!=nullptr, "No terminal node");
+
+        railingNodes.push_back(spaceportScene->GetNode("railingO"));
+        railingNodes.push_back(spaceportScene->GetNode("railingTE"));
+        railingNodes.push_back(spaceportScene->GetNode("railingOE"));
+        railingNodes.push_back(spaceportScene->GetNode("railingTT"));
     }
     else
     {
@@ -211,7 +228,7 @@ void Scene::Init()
 
     // Set scale
     texturedShipNode->transform = shipNode->transform;
-    float small = 0.001f;
+    float small = 0.01f; // TODO: Track this
     texturedShipNode->transform.SetScalef(1.0f + small);
 
     spaceportScene->SetActiveParentNode(shipNode);
@@ -294,6 +311,8 @@ void Scene::Init()
         platform_z = gdl::RocketSync::GetTrack("platform:z");
         platform_rotY = gdl::RocketSync::GetTrack("platform:rotY");
 
+        platform_railingY = gdl::RocketSync::GetTrack("platform:railingY");
+
         // Ship itself
         ship_x = gdl::RocketSync::GetTrack("ship:x");
         ship_y = gdl::RocketSync::GetTrack("ship:y");
@@ -303,6 +322,7 @@ void Scene::Init()
         ship_rotZ = gdl::RocketSync::GetTrack("ship:rotZ");
         ship_scale = gdl::RocketSync::GetTrack("ship:scale");
         ship_illumination = gdl::RocketSync::GetTrack("ship:illumination");
+        ship_detailScale = gdl::RocketSync::GetTrack("ship:detailScale");
 
 
         terrain_x = gdl::RocketSync::GetTrack("terrain:x");
@@ -357,6 +377,11 @@ void Scene::Update()
     elevatorPlatform->transform.position.z = gdl::RocketSync::GetFloat(platform_z);
     elevatorPlatform->transform.rotationDegrees.y = gdl::RocketSync::GetFloat(platform_rotY);
 
+    for(size_t i = 0; i < railingNodes.size(); i+=1)
+    {
+        railingNodes[i]->transform.position.y = gdl::RocketSync::GetFloat(platform_railingY);
+    }
+
 
     // Offset the ship position with rocket
 
@@ -367,6 +392,7 @@ void Scene::Update()
     shipNode->transform.rotationDegrees.y = gdl::RocketSync::GetFloat(ship_rotY);
     shipNode->transform.rotationDegrees.z = gdl::RocketSync::GetFloat(ship_rotZ);
     shipNode->transform.SetScalef( gdl::RocketSync::GetFloat(ship_scale));
+    texturedShipNode->transform.SetScalef(1.0f + gdl::RocketSync::GetFloat(ship_detailScale));
 
     gdl::vec3 tpos = gdl::vec3(gdl::RocketSync::GetFloat(terrain_x), gdl::RocketSync::GetFloat(terrain_y), gdl::RocketSync::GetFloat(terrain_z));
     terrainNode->transform.position = tpos;
@@ -475,7 +501,7 @@ void Scene::Draw()
             break;
 
         case Departures:
-            departures->Draw(camera);
+            departures->Draw(camera, spaceportScene, hangarNode);
             break;
 
 
@@ -526,6 +552,7 @@ void Scene::Draw()
         if (debugCamera)
         {
             camera->DebugDraw(gdl::GetScreenWidth()/2, gdl::GetScreenHeight()-gdl::GetScreenHeight()/2, debugFont);
+            DrawThirdsGuides();
         }
     }
     {
@@ -602,7 +629,7 @@ void Scene::DrawSpaceportScene()
         }
 
     glPopMatrix();
-    //DrawCredits();
+    DrawCredits();
 
 }
 
@@ -631,15 +658,17 @@ void Scene::DrawCredits()
 
 
     static const std::string creditsArray[] = {
-        "EMPLOY\nMUFFINTRAP\nENGINEERING\nSOLUTIONS",  // 0
-        "BUILD AT\nRACCOON\nVIOLET\nSHIP YARDS",      // 1
-        "USE\nMUFFIN\nTERRA\nFORMING",           // 2
-        "VURPO\nSOUND\nSCAPES",                  // 3
-        "CALL\nTURUMORE\nASMR\nFOR SLEEP",      // 4
-        "IJORO\nNATURAL\nPAINTS\nFOR\nENVIRONMENT"};      // 5
+        "WE EMPLOY\nMUFFINTRAP\nENGINEERING\nSOLUTIONS",   // 0
+        "BUILD AT\nRACCOON\nVIOLET\nSHIP YARDS",        // 1
+        "CONVINCING\nMATERIALS\nTRUST\nMUFFIN",                  // 2
+        "ENJOY\nVURPO\nSOUND\nSCAPES",                         // 3
+        "CALL\nTURUMORE\nASMR\nFOR SLEEP",              // 4
+        "IJORO\nPAINTS ARE\nGOOD FOR\nENVIRONMENT"};    // 5
 
-    int index = gdl::RocketSync::GetFloat(credit_index);
-    if (index < 0 || index >= 6)
+    static const size_t creditAmount = 6;
+
+    size_t index = static_cast<size_t>(gdl::RocketSync::GetFloat(credit_index));
+    if (index >= creditAmount)
     {
         index = 0;
     }
@@ -665,11 +694,11 @@ void Scene::DrawCredits()
 
         glTranslatef(0.0f, 0.0f, sz* 0.25f);
         glPushMatrix();
-            for (size_t i = 0; i < 6; i++)
+            for (size_t i = 0; i < 10; i++)
             {
-                const std::string& credit = creditsArray[index];
+                const std::string& credit = creditsArray[index%creditAmount];
                 // Text out of cube
-                creditFont->Print(colorsArray[index], tx, ty, tsz, gdl::LJustify, gdl::LJustify, credit.c_str());
+                creditFont->Print(colorsArray[index%creditAmount], tx, ty, tsz, gdl::LJustify, gdl::LJustify, credit.c_str());
 
                 glTranslatef(btw, 0.0f, 0.0f);
             }
@@ -715,6 +744,27 @@ void Scene::DrawFadeOut()
 		glDisable(GL_BLEND);
         glDepthFunc(GL_LEQUAL);
 	}
+}
+
+void Scene::DrawThirdsGuides()
+{
+
+	float third_w = 640.0f/3.0f;
+	float third_h = 480.0f/3.0f;
+
+	glBegin(GL_LINES);
+	glColor4f(0.7f, 0.7f, 0.7f, 0.5f);
+	for (int w = 1; w <= 3; w++)
+	{
+		glVertex2f(w*third_w, gdl::GetScreenHeight());
+		glVertex2f(w*third_w, 0.0f);
+	}
+	for (int h = 1; h <= 3; h++)
+	{
+		glVertex2f(0.0f, h*third_h);
+		glVertex2f(gdl::GetScreenWidth(), h*third_h);
+	}
+	glEnd();
 }
 
 void Scene::DebugDrawTiming()

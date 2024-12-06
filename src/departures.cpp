@@ -14,6 +14,9 @@
     static ROCKET_TRACK departure_width;
     static ROCKET_TRACK departure_height;
     static ROCKET_TRACK departure_depth;
+    static ROCKET_TRACK departure_hangarX;
+    static ROCKET_TRACK departure_hangarY;
+    static ROCKET_TRACK departure_hangarZ;
 
 
 #endif
@@ -33,13 +36,17 @@ DeparturesScene::DeparturesScene()
         departure_width = gdl::RocketSync::GetTrack("departure:width");
         departure_height = gdl::RocketSync::GetTrack("departure:height");
         departure_depth = gdl::RocketSync::GetTrack("departure:depth");
+
+        departure_hangarX = gdl::RocketSync::GetTrack("departure:hangarX");
+        departure_hangarY = gdl::RocketSync::GetTrack("departure:hangarY");
+        departure_hangarZ = gdl::RocketSync::GetTrack("departure:hangarZ");
 #endif
 
     flights.push_back(CreateInfo("BEER SQUADRON", "BRUSSELS/TERRA", "A1", Future));
-    flights.push_back(CreateInfo("SILJA FLIGHT", "STOCKHOLM/TERRA", "A2", Future));
-    flights.push_back(CreateInfo("LOVE PLANES", "BYTE ST./VENUS", "A3", Boarding));
+    flights.push_back(CreateInfo("SILJA LINE", "STOCKHOLM/TERRA", "A2", Future));
+    flights.push_back(CreateInfo("LOVE ROCKET", "BYTE ST./VENUS", "A3", Boarding));
     flights.push_back(CreateInfo("FINNAIR", "JYVAESKYLAE/TERRA", "B4", Future));
-    flights.push_back(CreateInfo("BEES", "ZWOLLE/TERRA", "B5", Future));
+    flights.push_back(CreateInfo("NOT THE BEES", "ZWOLLE/TERRA", "B5", Future));
 }
 
 void DeparturesScene::Update()
@@ -85,11 +92,23 @@ void DeparturesScene::DrawFlight ( const FlightInfo& info )
 }
 
 
-void DeparturesScene::Draw(Camera* camera)
+void DeparturesScene::Draw(Camera* camera, gdl::Scene* spacePortScene, gdl::Node* hangarNode)
 {
     glEnable(GL_DEPTH_TEST);
+
+
+
     camera->SetupFor3D();
     camera->LookAtTarget();
+
+    // Draw the hangar as a background
+    glPushMatrix();
+    glTranslatef(gdl::RocketSync::GetFloat(departure_hangarX),
+                 gdl::RocketSync::GetFloat(departure_hangarY),
+                 gdl::RocketSync::GetFloat(departure_hangarZ));
+    glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+        spacePortScene->DrawNode(hangarNode);
+    glPopMatrix();
 
 
     glPushMatrix();

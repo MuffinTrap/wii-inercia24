@@ -24,6 +24,7 @@ public:
 
 	void DebugDraw3DSpace(float sideLength);
 	void DebugDrawTiming();
+	void DrawThirdsGuides();
 
 	void DrawTerrainNode(gdl::Node* node);
 	void DrawBG(gdl::Image* bgImage, float xoffset, float yoffset, float scale);
@@ -61,6 +62,9 @@ public:
 	gdl::Node* terrainNode = nullptr;
 	gdl::Node* tunnelNode = nullptr;
 	gdl::Node* texturedShipNode = nullptr;
+	gdl::Node* hangarNode = nullptr;
+
+	std::vector<gdl::Node*> railingNodes;
 
 	gdl::Node* gateRingNode = nullptr;
 

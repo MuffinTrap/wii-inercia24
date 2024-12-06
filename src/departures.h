@@ -1,6 +1,7 @@
 #pragma once
 #include "camera.h"
 #include <vector>
+#include <mgdl.h>
 
 
 enum FlightStatus
@@ -25,7 +26,7 @@ class DeparturesScene
 public:
 	DeparturesScene();
 	void Update();
-	void Draw(Camera* camera);
+	void Draw(Camera* camera, gdl::Scene* spacePortScene, gdl::Node* hangarNode);
 	void DrawFlight(const FlightInfo& info);
 	gdl::Font* dotFont = nullptr;
 
