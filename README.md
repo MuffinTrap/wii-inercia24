@@ -4,7 +4,7 @@ Wii space demo for Inercia 2024
 
 
 **THE MUSIC**
-Is too big for github as a wav: [Get it from here](https://drive.google.com/file/d/1VkxwGh8k3hsZa7Vxt1_ewXTYOgXAhrci/view?usp=drive_link)
+Is too big for github as a wav: [Get it from here](https://drive.google.com/file/d/1VkxwGh8k3hsZa7Vxt1_ewXTYOgXAhrci/view?usp=sharing)
 
 
 **Links etc.**
