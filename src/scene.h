@@ -82,4 +82,8 @@ public:
 
 	gdl::Font* creditFont = nullptr;
 
+	// matcap code
+	gdl::Mesh* shipSurface = nullptr;
+
+
 };

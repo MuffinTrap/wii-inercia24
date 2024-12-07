@@ -511,6 +511,10 @@
 		<track name="ship:gearFrontBack">
 			<key interpolation="0" value="-23.500002" row="112"/>
 		</track>
+		<track name="ship:updateMatcap">
+			<key interpolation="0" value="1" row="0"/>
+			<key interpolation="0" value="0" row="768"/>
+		</track>
 		<track name="terrain:x">
 			<key interpolation="1" value="-350" row="0"/>
 			<key interpolation="1" value="-609" row="544"/>

@@ -1,8 +1,6 @@
 #include "camera.h"
 #include "math.h"
 #include <mgdl.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include "../rocket/mgdl-rocket.h"
 #include "../rocket_tracks.h"
 #include "drawscene.h"
@@ -150,7 +148,46 @@ void Camera::Update(float delta, gdl::vec3 target)
 		currentPosition = position;
 	}
 }
+glm::vec3 Camera::convertToGLM(const gdl::vec3& gdlVec) {
+    return glm::vec3(gdlVec.x, gdlVec.y, gdlVec.z);
+}
+glm::vec3 Camera::local_cross(const glm::vec3& v1, const glm::vec3& v2) {
+    return glm::vec3(
+        v1.y * v2.z - v1.z * v2.y,  // x component
+        v1.z * v2.x - v1.x * v2.z,  // y component
+        v1.x * v2.y - v1.y * v2.x   // z component
+    );
+}
 
+float Camera::local_dot(const glm::vec3& side, const glm::vec3& position) {
+    return side.x * position.x + side.y * position.y + side.z * position.z;
+}
+
+glm::mat4 Camera::GetViewMatrix() {
+    glm::vec3 forward = {
+	    target.x - position.x,
+	    target.y - position.y,
+	    target.z - position.z
+    }; // Forward direction (camera looks at origin)
+    forward = glm::normalize(forward);
+
+    glm::vec3 side = glm::normalize(local_cross(convertToGLM(up), forward)); // Right vector
+    glm::vec3 adjustedUp = local_cross(forward, side);         // Corrected Up vector
+
+    glm::mat4 viewMatrix(1.0f); // Initialize as identity matrix
+
+    // Set rotation (top-left 3x3 matrix)
+    viewMatrix[0][0] = side.x;       viewMatrix[1][0] = side.y;       viewMatrix[2][0] = side.z;
+    viewMatrix[0][1] = adjustedUp.x; viewMatrix[1][1] = adjustedUp.y; viewMatrix[2][1] = adjustedUp.z;
+    viewMatrix[0][2] = -forward.x;   viewMatrix[1][2] = -forward.y;   viewMatrix[2][2] = -forward.z;
+
+    // Set translation (last column)
+    viewMatrix[3][0] = -local_dot(side, convertToGLM(position));
+    viewMatrix[3][1] = -local_dot(adjustedUp, convertToGLM(position));
+    viewMatrix[3][2] = local_dot(forward, convertToGLM(position));
+
+    return viewMatrix;
+}
 void Camera::DebugDraw (short x, short y, gdl::Font* font )
 {
 	font->Printf(gdl::Colors::White,

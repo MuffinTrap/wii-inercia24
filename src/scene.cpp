@@ -3,8 +3,11 @@
 #include "terraingen.h"
 #include "draw3d.h"
 #include "starsphere.h"
+#include "matcap.h"
+
 #include "../rocket/mgdl-rocket.h"
 #include "../tracks.h"
+
 #include <glm/gtc/matrix_transform.hpp>
 #include <mgdl/mgdl-draw2d.h>
 #include <mgdl/mgdl-util.h>
@@ -55,6 +58,7 @@
     static ROCKET_TRACK ship_gearZ;
     static ROCKET_TRACK ship_gearBetween;
     static ROCKET_TRACK ship_gearFrontBack;
+    static ROCKET_TRACK ship_updateMatcap;
 
 
     // Terrain
@@ -214,15 +218,23 @@ void Scene::Init()
     //spaceportScene->SetActiveParentNode(spaceportScene->GetRootNode());
     //spaceportScene->PushChildNode(starSphereNode);
 
-    shipNode = shipScene->GetNode("pCylinder5");
-    gdl_assert_print(shipNode!=nullptr, "No ship");
-    // Connect the ship to the platform
-    spaceportScene->SetActiveParentNode(elevatorPlatform);
-    spaceportScene->PushChildNode(shipNode);
 
     // Duplicate ship node
     // ///////////////////////////////////////////////////
 
+    // TODO: Bug in the GetNode.
+    // Dependent on the order of operations
+    // If this code is before finding the other
+    // nodes, the other nodes are not found!
+    shipNode = shipScene->GetNode("pCylinder5");
+    gdl_assert_print(shipNode!=nullptr, "No ship");
+    shipSurface = shipNode->mesh;
+    gdl_assert_print(shipSurface !=nullptr, "Could not get ship mesh");
+    // Connect the ship to the platform
+    spaceportScene->SetActiveParentNode(elevatorPlatform);
+    spaceportScene->PushChildNode(shipNode);
+
+    // END TODO
 
     // Duplicate mesh
     gdl::Mesh* shipDuplicate = new gdl::Mesh();
@@ -379,6 +391,7 @@ void Scene::Init()
         ship_gearZ = gdl::RocketSync::GetTrack("ship:gearZ");
         ship_gearBetween = gdl::RocketSync::GetTrack("ship:gearBetween");
         ship_gearFrontBack = gdl::RocketSync::GetTrack("ship:gearFrontBack");
+        ship_updateMatcap = gdl::RocketSync::GetTrack("ship:updateMatcap");
 
 
         terrain_x = gdl::RocketSync::GetTrack("terrain:x");
@@ -546,7 +559,20 @@ void Scene::Update()
     }
 
 
-    // Update ship matcap
+    activeScene = (DrawScene)gdl::RocketSync::GetInt(scene);
+    switch(activeScene)
+    {
+        case Earth:
+        case Gate:
+            break;
+        default:
+            if (gdl::RocketSync::GetBool(ship_updateMatcap))
+            {
+                // Update ship matcap when it is close to camera
+                matcapEffect(shipSurface, camera, shipNode->transform);
+            }
+            break;
+    }
 
     // TerrainGenerator::CalculateMatcapFromCamera((TerrainMesh*)terrainNode->mesh, camera->GetDirection());
     // TerrainGenerator::CalculateMatcapFromNormals((TerrainMesh*)terrainNode->mesh);

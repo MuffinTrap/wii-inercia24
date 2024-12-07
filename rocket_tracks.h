@@ -59,6 +59,7 @@ extern const sync_track ship_gearY;
 extern const sync_track ship_gearZ;
 extern const sync_track ship_gearBetween;
 extern const sync_track ship_gearFrontBack;
+extern const sync_track ship_updateMatcap;
 extern const sync_track terrain_x;
 extern const sync_track terrain_y;
 extern const sync_track terrain_z;
