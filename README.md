@@ -1,14 +1,21 @@
 # wii-inercia24
 Wii space demo for Inercia 2024
-'Marmot Spacelines Flight 2024'
+'Marmot Spacelines 2024'
+
+## Links etc
+
+### Video captures
+- [Final version : the compo entry](https://youtu.be/RJLuqgfDlUE)
+- [Alpha version](https://youtu.be/SGji5DPvcKo)
+- [Scene durations cut](https://youtu.be/HF8GMk6vles)
+- [Rough first cut](https://youtu.be/ZYgxOfbzJiw)
 
 
-**THE MUSIC**
+### Music
 Is too big for github as a wav: [Get it from here](https://drive.google.com/file/d/1VkxwGh8k3hsZa7Vxt1_ewXTYOgXAhrci/view?usp=sharing)
 
 
-**Links etc.**
-
+### References
 - [Reference images from Elite Dangerous](https://imgur.com/a/inercia-space-reference-klIk9j2)
 - [Storyboard](https://imgur.com/a/Z9nxCJp)
 - [Storyboard palette](https://lospec.com/palette-list/ink)
@@ -18,7 +25,7 @@ Is too big for github as a wav: [Get it from here](https://drive.google.com/file
 - [Earth image from NASA](https://images.nasa.gov/details/PIA00122)
 
 
-### Development environment
+## Development
 - [Trello](https://trello.com/b/iNhn7PfS/wii-inercia24)
 Use mtek-gdl branch **ufbx**
 
